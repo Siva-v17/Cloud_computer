@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>404 — Region Not Found | STACKLY Cloud</title>
+<meta name="description" content="This page couldn't be routed to any active STACKLY Cloud region.">
+<link rel="icon" href="./assets/images/stackly-removebg-preview.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --bg-void:        #07080c;
+  --bg-base:        #0b0d12;
+  --bg-surface:     #12151c;
+  --bg-surface-2:   #191d27;
+  --bg-elevated:    #20242f;
+  --border-hair:    rgba(232,234,237,0.08);
+  --border-soft:    rgba(232,234,237,0.14);
+
+  --signal-indigo:      #5b7fff;
+  --signal-indigo-dim:  #3a4d99;
+  --signal-teal:         #00e5a0;
+  --signal-teal-dim:     #0a5c46;
+  --signal-copper:       #ff7a45;
+  --signal-amber:        #ffb648;
+  --signal-red:           #ff5470;
+
+  --text-primary:   #eef0f3;
+  --text-secondary: #a7aebc;
+  --text-muted:     #6b7284;
+  --text-on-accent: #07080c;
+
+  --font-display: 'Space Grotesk', sans-serif;
+  --font-body:    'Inter', sans-serif;
+  --font-mono:    'JetBrains Mono', monospace;
+
+  --fs-h1:     clamp(2.4rem, 4.4vw, 4.4rem);
+  --fs-lead:   clamp(1.1rem, 1.6vw, 1.35rem);
+  --fs-body:   1rem;
+  --fs-small:  0.875rem;
+  --fs-micro:  0.75rem;
+
+  --sp-1: 0.4rem;
+  --sp-2: 0.8rem;
+  --sp-3: 1.6rem;
+  --sp-4: 2.4rem;
+  --sp-5: 4rem;
+  --sp-6: 4.4rem;
+  --sp-7: 6rem;
+
+  --ease-out: cubic-bezier(.16,.84,.44,1);
+  --ease-in-out: cubic-bezier(.65,0,.35,1);
+  --dur-fast: .22s;
+  --dur-med: .5s;
+  --dur-slow: .9s;
+
+  --r-sm: 6px;
+  --r-md: 12px;
+  --r-lg: 20px;
+  --r-pill: 999px;
+
+  --container: 1360px;
+
+  --glow-indigo: 0 0 40px rgba(91,127,255,0.35);
+  --glow-teal: 0 0 40px rgba(0,229,160,0.28);
+  --shadow-card: 0 20px 60px -20px rgba(0,0,0,0.55);
+}
+
+@media (prefers-reduced-motion: reduce){
+  *{ animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; scroll-behavior: auto !important; }
+}
+
+*, *::before, *::after{ box-sizing: border-box; margin:0; padding:0; }
+html, body{ height:100%; }
+body{
+  background: var(--bg-base);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+img, svg{ display:block; max-width:100%; }
+a{ color:inherit; text-decoration:none; }
+button{ font-family:inherit; cursor:pointer; border:none; background:none; color:inherit; }
+
+h1,h2,h3{ font-family: var(--font-display); font-weight:600; line-height:1.08; letter-spacing:-0.02em; }
+p{ color: var(--text-secondary); }
+
+::selection{ background: var(--signal-indigo); color:#fff; }
+:focus-visible{ outline: 2px solid var(--signal-teal); outline-offset: 3px; border-radius: 3px; }
+
+.container{ width:100%; max-width: var(--container); margin:0 auto; padding: 0 var(--sp-4); }
+@media (max-width: 640px){ .container{ padding: 0 var(--sp-3); } }
+
+.eyebrow{
+  font-family: var(--font-mono); font-size: var(--fs-micro); letter-spacing:0.14em; text-transform:uppercase;
+  color: var(--signal-red); display:flex; align-items:center; justify-content:center; gap: var(--sp-2);
+}
+.eyebrow::before{ content:''; width:6px; height:6px; border-radius:50%; background: var(--signal-red); box-shadow: 0 0 10px var(--signal-red); }
+
+.text-mono{ font-family: var(--font-mono); }
+.text-grad{
+  background: linear-gradient(100deg, var(--signal-indigo), var(--signal-teal));
+  -webkit-background-clip: text; background-clip:text; color:transparent;
+}
+
+::-webkit-scrollbar{ width:10px; }
+::-webkit-scrollbar-track{ background: var(--bg-base); }
+::-webkit-scrollbar-thumb{ background: var(--bg-elevated); border-radius: 10px; }
+
+.grain{
+  position: fixed; inset:0; z-index: 2; pointer-events:none; opacity:.03; mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+
+
+/* ==========================================================================
+   404 HERO
+   ========================================================================== */
+.error-hero{
+  position: relative; min-height: 100vh; display:flex; align-items:center; justify-content:center;
+  padding: 160px 0 var(--sp-7); overflow:hidden; text-align:center;
+}
+.error-grid-bg{
+  position:absolute; inset:0; z-index:0;
+  background-image:
+    linear-gradient(var(--border-hair) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border-hair) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: radial-gradient(ellipse at 50% 35%, black 5%, transparent 65%);
+}
+.error-inner{ position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; }
+
+/* ---- Disconnected node graphic ---- */
+.error-visual{ width:100%; max-width: 360px; margin: var(--sp-5) auto; position:relative; }
+.node-svg{ width:100%; height:auto; }
+.node-ring{ fill:none; stroke: var(--border-hair); stroke-width:1; stroke-dasharray: 3 9; animation: spin 70s linear infinite; transform-origin: 180px 140px; }
+@keyframes spin{ to{ transform: rotate(360deg); } }
+.node-core{ fill: var(--bg-surface); stroke: var(--signal-red); stroke-width:1.5; }
+.node-dot{ fill: var(--bg-base); stroke: var(--text-muted); stroke-width:2; }
+.node-link{ stroke: var(--border-soft); stroke-width:1.4; stroke-dasharray: 4 6; }
+.node-link--broken{ stroke: var(--signal-red); opacity:.55; animation: pulseLine 1.8s ease-in-out infinite; }
+@keyframes pulseLine{ 0%,100%{ opacity:.2; } 50%{ opacity:.7; } }
+.spark-x{ stroke: var(--signal-red); stroke-width:2; stroke-linecap:round; filter: drop-shadow(0 0 6px var(--signal-red)); }
+
+.error-code{
+  font-family: var(--font-display); font-weight:700; letter-spacing:-0.03em;
+  font-size: clamp(5rem, 16vw, 9rem); line-height:1; margin-top: var(--sp-4);
+}
+.error-title{ margin-top: var(--sp-3); font-size: var(--fs-h1); }
+.error-lead{ max-width: 560px; margin: var(--sp-3) auto 0; font-size: var(--fs-lead); }
+
+.error-actions{ display:flex; gap: var(--sp-3); margin-top: var(--sp-5); flex-wrap:wrap; justify-content:center; }
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:.6rem; padding:.9rem 1.7rem;
+  font-weight:600; font-size: var(--fs-small); border-radius: var(--r-pill); border:1px solid transparent;
+  transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast), background var(--dur-fast), border-color var(--dur-fast);
+}
+.btn-primary{ background: var(--text-primary); color:#07080c; }
+.btn-primary:hover{ transform: translateY(-2px); box-shadow: var(--glow-teal); background:#fff; }
+.btn-ghost{ background: transparent; border-color: var(--border-soft); color: var(--text-primary); }
+.btn-ghost:hover{ border-color: var(--signal-indigo); transform: translateY(-2px); }
+
+/* ---- Fake status readout, on-theme with the rest of the site ---- */
+.error-status{
+  margin-top: var(--sp-6); display:inline-flex; flex-direction:column; gap: var(--sp-2);
+  background: var(--bg-surface); border:1px solid var(--border-hair); border-radius: var(--r-lg);
+  padding: var(--sp-3) var(--sp-4); text-align:left; font-family: var(--font-mono); font-size: var(--fs-micro);
+  color: var(--text-muted); min-width: 300px;
+}
+.error-status-row{ display:flex; justify-content:space-between; gap: var(--sp-4); }
+.error-status-row b{ color: var(--text-secondary); font-weight:500; }
+.error-status-row .val-fail{ color: var(--signal-red); }
+.error-status-row .val-ok{ color: var(--signal-teal); }
+
+/* ---- Search box, for "was this a typo?" ---- */
+.error-search{ margin-top: var(--sp-6); width:100%; max-width:420px; display:flex; gap: var(--sp-2); }
+.error-search input{
+  flex:1; padding:.9rem 1.1rem; background: var(--bg-surface); border:1px solid var(--border-soft);
+  border-radius: var(--r-md); color: var(--text-primary); font-size: var(--fs-body); font-family: var(--font-body);
+}
+.error-search input:focus{ outline:none; border-color: var(--signal-indigo); box-shadow: 0 0 0 3px rgba(91,127,255,0.18); }
+.error-search input::placeholder{ color: var(--text-muted); }
+.error-search button{
+  padding:.9rem 1.4rem; border-radius: var(--r-md); background: var(--signal-indigo); color:#fff; font-weight:600;
+  font-size: var(--fs-small); transition: transform var(--dur-fast), background var(--dur-fast);
+}
+.error-search button:hover{ transform: translateY(-2px); background:#4a6ce0; }
+
+.error-links{ margin-top: var(--sp-5); display:flex; gap: var(--sp-4); flex-wrap:wrap; justify-content:center; }
+.error-links a{ font-size: var(--fs-small); color: var(--text-secondary); font-family: var(--font-mono); transition: color var(--dur-fast); position:relative; }
+.error-links a:hover{ color: var(--signal-teal); }
+
+@media (max-width: 480px){
+  .error-actions{ flex-direction:column; align-items:stretch; }
+  .error-actions .btn{ width:100%; }
+  .error-search{ flex-direction:column; }
+}
+</style>
+</head>
+<body>
+
+  <div class="grain"></div>
+
+  <main>
+    <section class="error-hero">
+      <div class="error-grid-bg" aria-hidden="true"></div>
+      <div class="container error-inner">
+        <div class="error-code text-grad">404</div>
+        <div class="eyebrow">Error 404 · Region unreachable</div>
+        <h1 class="error-title">This region isn't provisioned.</h1>
+        <p class="error-lead">The page you're looking for was deprovisioned, renamed, or never deployed to this environment. Your other services are unaffected.</p>
+
+        <div class="error-actions">
+          <button type="button" class="btn btn-ghost" id="goBackBtn">
+            <span aria-hidden="true">&larr;</span> Go back
+          </button>
+          <a href="index.html" class="btn btn-primary">Return to homepage <span aria-hidden="true">&rarr;</span></a>
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      "use strict";
+
+      // Go back button: use browser history if there is somewhere to go
+      // back to, otherwise fall back to the homepage so it never dead-ends.
+      const goBackBtn = document.getElementById("goBackBtn");
+      if (goBackBtn) {
+        goBackBtn.addEventListener("click", () => {
+          if (window.history.length > 1) {
+            window.history.back();
+          } else {
+            window.location.href = "index.html";
+          }
+        });
+      }
+
+      // Show the actual attempted path in the status readout
+      const routeEl = document.getElementById("routePath");
+      if (routeEl) {
+        const path = window.location.pathname || "/unknown";
+        routeEl.textContent = path.length > 28 ? path.slice(0, 25) + "…" : path;
+      }
+
+      // Search box: send query to the services page (adjust target as needed)
+      const searchForm = document.querySelector(".error-search");
+      if (searchForm) {
+        searchForm.addEventListener("submit", () => {
+          const input = searchForm.querySelector("input");
+          const q = input.value.trim();
+          if (q) window.location.href = "services.html?q=" + encodeURIComponent(q);
+        });
+      }
+    })();
+  </script>
+
+</body>
+</html>

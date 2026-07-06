@@ -1,0 +1,1416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Engineering Blog — STACKLY Cloud</title>
+<meta name="description" content="Notes from the STACKLY Cloud engineering team on infrastructure, reliability and scale.">
+<link rel="icon" href="./assets/images/stackly-removebg-preview.png">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./css/variables.css">
+<link rel="stylesheet" href="./css/base.css">
+<link rel="stylesheet" href="./css/components.css">
+<link rel="stylesheet" href="./css/blog.css">
+<style>
+
+/* ==========================================================================
+   1. TOKENS
+   ========================================================================== */
+:root{
+  /* Core surfaces */
+  --bg-void:        #07080c;
+  --bg-base:        #0b0d12;
+  --bg-surface:     #12151c;
+  --bg-surface-2:   #191d27;
+  --bg-elevated:    #20242f;
+  --border-hair:    rgba(232,234,237,0.08);
+  --border-soft:    rgba(232,234,237,0.14);
+
+  /* Signal accents */
+  --signal-indigo:      #5b7fff;
+  --signal-indigo-dim:  #3a4d99;
+  --signal-teal:        #00e5a0;
+  --signal-teal-dim:    #0a5c46;
+  --signal-copper:      #ff7a45;
+  --signal-amber:       #ffb648;
+  --signal-red:         #ff5470;
+
+  /* Text */
+  --text-primary:   #eef0f3;
+  --text-secondary: #a7aebc;
+  --text-muted:     #6b7284;
+  --text-on-accent: #07080c;
+
+  /* Type families */
+  --font-display: 'Space Grotesk', sans-serif;
+  --font-body:    'Inter', sans-serif;
+  --font-mono:    'JetBrains Mono', monospace;
+
+  /* Type scale */
+  --fs-hero:   clamp(3.2rem, 7vw, 7.2rem);
+  --fs-h1:     clamp(2.4rem, 4.4vw, 4.4rem);
+  --fs-h2:     clamp(1.9rem, 3.2vw, 3rem);
+  --fs-h3:     clamp(1.4rem, 2vw, 1.9rem);
+  --fs-lead:   clamp(1.1rem, 1.6vw, 1.35rem);
+  --fs-body:   1rem;
+  --fs-small:  0.875rem;
+  --fs-micro:  0.75rem;
+
+  /* Spacing (section gaps tightened from the original 6.4 / 9.6rem scale) */
+  --sp-1: 0.4rem;
+  --sp-2: 0.8rem;
+  --sp-3: 1.6rem;
+  --sp-4: 2.4rem;
+  --sp-5: 3.2rem;
+  --sp-6: 4.4rem;
+  --sp-7: 5.6rem;
+
+  /* Motion */
+  --ease-out: cubic-bezier(.16,.84,.44,1);
+  --ease-in-out: cubic-bezier(.65,0,.35,1);
+  --dur-fast: .22s;
+  --dur-med: .5s;
+  --dur-slow: .9s;
+
+  /* Radius */
+  --r-sm: 6px;
+  --r-md: 12px;
+  --r-lg: 20px;
+  --r-pill: 999px;
+
+  /* Container */
+  --container: 1360px;
+
+  /* Shadows / glow */
+  --glow-indigo: 0 0 40px rgba(91,127,255,0.35);
+  --glow-teal: 0 0 40px rgba(0,229,160,0.28);
+  --shadow-card: 0 20px 60px -20px rgba(0,0,0,0.55);
+}
+
+@media (prefers-reduced-motion: reduce){
+  *{ animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; scroll-behavior: auto !important; }
+}
+
+/* ==========================================================================
+   2. RESET & BASE
+   ========================================================================== */
+*, *::before, *::after{ box-sizing: border-box; margin: 0; padding: 0; }
+html{ scroll-behavior: smooth; }
+html, body{ height: 100%; }
+
+body{
+  background: var(--bg-base);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+img, svg{ display: block; max-width: 100%; }
+a{ color: inherit; text-decoration: none; }
+ul, ol{ list-style: none; }
+button{ font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+input, textarea, select{ font-family: inherit; font-size: inherit; color: inherit; }
+
+h1, h2, h3, h4{ font-family: var(--font-display); font-weight: 600; line-height: 1.08; letter-spacing: -0.02em; }
+h1{ font-size: var(--fs-h1); }
+h2{ font-size: var(--fs-h2); }
+h3{ font-size: var(--fs-h3); }
+p{ color: var(--text-secondary); }
+
+::selection{ background: var(--signal-indigo); color: #fff; }
+
+:focus-visible{
+  outline: 2px solid var(--signal-teal);
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+
+.container{
+  width: 100%;
+  max-width: var(--container);
+  margin: 0 auto;
+  padding: 0 var(--sp-4);
+}
+
+.eyebrow{
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--signal-teal);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+.eyebrow::before{
+  content: '';
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--signal-teal);
+  box-shadow: 0 0 10px var(--signal-teal);
+}
+
+.text-mono{ font-family: var(--font-mono); }
+.text-muted{ color: var(--text-muted); }
+.text-grad{
+  background: linear-gradient(100deg, var(--signal-indigo), var(--signal-teal));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Section scaffolding */
+.section{ padding: var(--sp-6) 0; position: relative; }
+.section-tight{ padding: var(--sp-5) 0; }
+.section-head{ max-width: 720px; margin-bottom: var(--sp-4); }
+.section-head h2{ margin-top: var(--sp-2); }
+.section-head p{ margin-top: var(--sp-2); font-size: var(--fs-lead); }
+
+[data-reveal]{ opacity: 1; transform: none; }
+html.js [data-reveal]{ opacity: 0; transform: translateY(36px); }
+html.js [data-reveal].is-visible{
+  opacity: 1; transform: translateY(0);
+  transition: opacity .9s var(--ease-out), transform .9s var(--ease-out);
+}
+
+/* ==========================================================================
+   3. LOADER / PROGRESS / GRAIN / CURSOR
+   ========================================================================== */
+.loader{
+  position: fixed; inset: 0; z-index: 9999;
+  background: var(--bg-void);
+  display: flex; align-items: center; justify-content: center;
+  transition: opacity .6s var(--ease-out), visibility .6s;
+}
+.loader.is-hidden{ opacity: 0; visibility: hidden; pointer-events: none; }
+.loader-mark{
+  font-family: var(--font-mono);
+  font-size: var(--fs-small);
+  color: var(--text-muted);
+  letter-spacing: .1em;
+  display: flex; flex-direction: column; align-items: center; gap: var(--sp-3);
+}
+.loader-bar{ width: 180px; height: 2px; background: var(--border-soft); overflow: hidden; position: relative; }
+.loader-bar::after{
+  content: ''; position: absolute; inset: 0; width: 40%; background: var(--signal-indigo);
+  animation: loaderSlide 1.1s var(--ease-in-out) infinite;
+}
+@keyframes loaderSlide{ 0%{ transform: translateX(-100%); } 100%{ transform: translateX(350%); } }
+
+.scroll-progress{
+  position: fixed; top: 0; left: 0; height: 2px; width: 0%;
+  background: linear-gradient(90deg, var(--signal-indigo), var(--signal-teal));
+  z-index: 1001;
+}
+
+::-webkit-scrollbar{ width: 10px; }
+::-webkit-scrollbar-track{ background: var(--bg-base); }
+::-webkit-scrollbar-thumb{ background: var(--bg-elevated); border-radius: 10px; }
+
+.grain{
+  position: fixed; inset: 0; z-index: 2; pointer-events: none; opacity: .03; mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.cursor-glow{
+  position: fixed; width: 420px; height: 420px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(91,127,255,0.10), transparent 70%);
+  pointer-events: none; z-index: 1; transform: translate(-50%,-50%);
+  transition: opacity .3s; will-change: transform;
+}
+
+/* ==========================================================================
+   5. PRELOADER
+   ========================================================================== */
+.loader{
+  position: fixed; inset: 0; z-index: 9999;
+  background: var(--bg-void);
+  display:flex; align-items:center; justify-content:center;
+  transition: opacity var(--dur-slow) var(--ease-in-out), visibility var(--dur-slow);
+}
+.loader.is-hidden{ opacity:0; visibility:hidden; pointer-events:none; }
+
+.loader-inner{
+  display:flex; flex-direction:column; align-items:center; gap:1.6rem;
+  width:min(90vw, 340px);
+}
+
+/* ---- brand wordmark: letters stagger in on load ---- */
+.loader-brand{
+  display:flex; gap:.12em;
+  font-family: var(--font-display); font-weight:600; font-size:1.1rem;
+  letter-spacing:.16em; text-transform:uppercase; color: var(--text-primary);
+}
+.loader-brand span{
+  opacity:0; transform: translateY(10px);
+  animation: letterIn .5s var(--ease-out) forwards;
+}
+
+@keyframes letterIn{
+  to{ opacity:1; transform: translateY(0); }
+}
+
+/* ---- percentage + status ---- */
+.loader-count{
+  font-family:var(--font-display); font-weight:600;
+  font-size:2.6rem; letter-spacing:-0.02em; color:var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+.loader-count small{ font-family:var(--font-mono); font-size:1.1rem; color:var(--text-muted); font-weight:400; }
+
+.loader-status{
+  font-family: var(--font-mono);
+  font-size:.78rem; letter-spacing:.06em; color:var(--text-muted);
+  height:1.2em; text-align:center;
+  transition: opacity var(--dur-fast) ease, transform var(--dur-fast) ease;
+}
+.loader-status.is-fading{ opacity:0; transform: translateY(4px); }
+
+.loader-track{
+  width:100%; height:2px; background:var(--bg-surface); border-radius:999px; overflow:hidden;
+  border:1px solid var(--border-hair);
+}
+.loader-fill{
+  height:100%; width:0%;
+  background:linear-gradient(90deg, var(--signal-indigo), var(--signal-teal));
+  transition:width .18s linear;
+}
+
+/* ==========================================================================
+   4. BUTTONS
+   ========================================================================== */
+.btn{
+  display: inline-flex; align-items: center; justify-content: center; gap: .6rem;
+  padding: .9rem 1.7rem;
+  font-family: var(--font-body); font-weight: 600; font-size: var(--fs-small);
+  border-radius: var(--r-pill);
+  border: 1px solid transparent;
+  transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast), background var(--dur-fast), border-color var(--dur-fast);
+  white-space: nowrap;
+}
+.btn-primary{ background: var(--text-primary); color: #07080c; }
+.btn-primary:hover{ transform: translateY(-2px); box-shadow: var(--glow-teal); background: #fff; }
+.btn-ghost{ background: transparent; border-color: var(--border-soft); color: var(--text-primary); }
+.btn-ghost:hover{ border-color: var(--signal-indigo); transform: translateY(-2px); }
+.btn-accent{ background: linear-gradient(100deg, var(--signal-indigo), var(--signal-teal)); color: #04050a; }
+.btn-accent:hover{ transform: translateY(-2px); box-shadow: var(--glow-indigo); }
+.btn-block{ width: 100%; }
+.btn-sm{ padding: .6rem 1.1rem; font-size: var(--fs-micro); }
+.btn[disabled]{ opacity: .5; pointer-events: none; }
+
+/* ==========================================================================
+   5. NAVBAR
+   ========================================================================== */
+.nav{
+  position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+  padding: var(--sp-3) 0;
+  transition: background var(--dur-med) var(--ease-out), padding var(--dur-med), border-color var(--dur-med);
+  border-bottom: 1px solid transparent;
+}
+.nav.is-scrolled{
+  background: rgba(11,13,18,0.82);
+  backdrop-filter: blur(16px);
+  padding: var(--sp-2) 0;
+  border-color: var(--border-hair);
+}
+.nav-inner{ display: flex; align-items: center; justify-content: space-between; gap: var(--sp-4); }
+.nav-logo{ display: flex; align-items: center; gap: .6rem; }
+.nav-logo-img{ height: 50px; width: 150px; }
+.nav-logo-text{ font-family: var(--font-mono); font-size: var(--fs-small); letter-spacing: .14em; color: var(--text-muted); }
+.nav-links{ display: flex; align-items: center; gap: var(--sp-5); }
+.nav-links a{
+  position: relative; font-size: var(--fs-small); font-weight: 500; color: var(--text-secondary);
+  padding: .3rem 0; transition: color var(--dur-fast);
+}
+.nav-links a::after{
+  content: ''; position: absolute; left: 0; bottom: -2px; width: 0; height: 1px;
+  background: var(--signal-teal); transition: width var(--dur-fast) var(--ease-out);
+}
+.nav-links a:hover, .nav-links a.is-active{ color: var(--text-primary); }
+.nav-links a:hover::after, .nav-links a.is-active::after{ width: 100%; }
+.nav-actions{ display: flex; align-items: center; gap: var(--sp-3); }
+.nav-toggle{ display: none; flex-direction: column; gap: 5px; width: 26px; z-index: 1100; }
+.nav-toggle span{ height: 2px; background: var(--text-primary); border-radius: 2px; transition: transform var(--dur-fast), opacity var(--dur-fast); }
+.nav-toggle.is-open span:nth-child(1){ transform: translateY(7px) rotate(45deg); }
+.nav-toggle.is-open span:nth-child(2){ opacity: 0; }
+.nav-toggle.is-open span:nth-child(3){ transform: translateY(-7px) rotate(-45deg); }
+
+/* ==========================================================================
+   6. FOOTER
+   ========================================================================== */
+.footer{
+  background: var(--bg-void);
+  border-top: 1px solid var(--border-hair);
+  padding: var(--sp-6) 0 var(--sp-4);
+}
+.footer-top{
+  display: grid; grid-template-columns: 1.4fr repeat(3, 1fr); gap: var(--sp-5);
+  padding-bottom: var(--sp-5);
+}
+.footer-brand .nav-logo{ margin-bottom: var(--sp-3); }
+.footer-brand p{ max-width: 320px; font-size: var(--fs-small); }
+.footer-col h4{ font-family: var(--font-mono); font-size: var(--fs-micro); letter-spacing: .1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: var(--sp-3); }
+.footer-col a{ display: block; font-size: var(--fs-small); color: var(--text-secondary); padding: .35rem 0; transition: color var(--dur-fast); }
+.footer-col a:hover{ color: var(--signal-teal); }
+.footer-bottom{
+  display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--sp-3);
+  padding-top: var(--sp-3); border-top: 1px solid var(--border-hair);
+  font-size: var(--fs-micro); color: var(--text-muted); font-family: var(--font-mono);
+}
+.footer-status{ display: flex; align-items: center; gap: .5rem; }
+.footer-status .dot{ width: 7px; height: 7px; border-radius: 50%; background: var(--signal-teal); box-shadow: 0 0 8px var(--signal-teal); }
+
+/* ==========================================================================
+   7. CARDS / BADGES
+   ========================================================================== */
+.card{
+  background: var(--bg-surface);
+  border: 1px solid var(--border-hair);
+  border-radius: var(--r-lg);
+  padding: var(--sp-4);
+  transition: border-color var(--dur-fast), transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast);
+}
+.card:hover{ border-color: var(--border-soft); transform: translateY(-4px); box-shadow: var(--shadow-card); }
+
+.badge{
+  display: inline-flex; align-items: center; gap: .4rem;
+  font-family: var(--font-mono); font-size: var(--fs-micro);
+  padding: .3rem .7rem; border-radius: var(--r-pill);
+  background: rgba(91,127,255,0.12); color: var(--signal-indigo);
+  border: 1px solid rgba(91,127,255,0.25);
+}
+.badge-teal{ background: rgba(0,229,160,0.1); color: var(--signal-teal); border-color: rgba(0,229,160,0.25); }
+.badge-amber{ background: rgba(255,182,72,0.1); color: var(--signal-amber); border-color: rgba(255,182,72,0.25); }
+.badge-red{ background: rgba(255,84,112,0.1); color: var(--signal-red); border-color: rgba(255,84,112,0.25); }
+.badge-copper{ background: rgba(255,122,69,0.1); color: var(--signal-copper); border-color: rgba(255,122,69,0.25); }
+
+.pill-stat{
+  font-family: var(--font-mono); font-size: var(--fs-micro); color: var(--text-muted);
+  border: 1px solid var(--border-hair); border-radius: var(--r-pill); padding: .4rem .9rem;
+  display: inline-flex; align-items: center; gap: .5rem;
+}
+.divider{ height: 1px; background: var(--border-hair); width: 100%; }
+
+/* ==========================================================================
+   8. FORMS
+   ========================================================================== */
+.field{ margin-bottom: var(--sp-3); }
+.field label{
+  display: block; font-family: var(--font-mono); font-size: var(--fs-micro);
+  letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted); margin-bottom: var(--sp-1);
+}
+.field input, .field textarea, .field select{
+  width: 100%; padding: .9rem 1rem;
+  background: var(--bg-surface); border: 1px solid var(--border-soft);
+  border-radius: var(--r-md); color: var(--text-primary); font-size: var(--fs-body);
+  transition: border-color var(--dur-fast), box-shadow var(--dur-fast);
+}
+.field input:focus, .field textarea:focus, .field select:focus{
+  outline: none; border-color: var(--signal-indigo); box-shadow: 0 0 0 3px rgba(91,127,255,0.18);
+}
+.field textarea{ resize: vertical; min-height: 130px; }
+.field-error{ font-size: var(--fs-micro); color: var(--signal-red); margin-top: .35rem; display: none; font-family: var(--font-mono); }
+.field.has-error input, .field.has-error textarea{ border-color: var(--signal-red); }
+.field.has-error .field-error{ display: block; }
+.field-hint{ font-size: var(--fs-micro); color: var(--text-muted); margin-top: .35rem; }
+.checkbox-row{ display: flex; align-items: center; gap: .6rem; font-size: var(--fs-small); color: var(--text-secondary); }
+.checkbox-row input{ width: 16px; height: 16px; accent-color: var(--signal-teal); }
+
+/* ==========================================================================
+   9. BLOG — HERO
+   ========================================================================== */
+.blog-hero{
+  position: relative;
+  padding: 150px 0 var(--sp-5);
+  overflow: hidden;
+}
+.blog-hero-bg{
+  position: absolute; inset: 0; z-index: -1;
+}
+.blog-hero-bg img{
+  width: 100%; height: 100%; object-fit: cover; object-position: center 30%;
+  opacity: 0.32;
+}
+.blog-hero-bg::after{
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    linear-gradient(180deg, rgba(7,8,12,0.55) 0%, rgba(7,8,12,0.86) 72%, var(--bg-base) 100%),
+    linear-gradient(100deg, rgba(91,127,255,0.16), rgba(0,229,160,0.08));
+}
+.blog-hero h1{ margin-top: var(--sp-3); max-width: 760px; }
+.blog-hero-lead{ margin-top: var(--sp-3); max-width: 560px; font-size: var(--fs-lead); }
+.blog-hero-stats{
+  display: flex; flex-wrap: wrap; gap: var(--sp-3);
+  margin-top: var(--sp-5);
+}
+.hero-stat{
+  display: flex; flex-direction: column; gap: .2rem;
+  padding: var(--sp-3) var(--sp-4);
+  background: rgba(18,21,28,0.6);
+  border: 1px solid var(--border-hair);
+  border-radius: var(--r-md);
+  backdrop-filter: blur(6px);
+  min-width: 150px;
+}
+.hero-stat strong{ font-family: var(--font-display); font-size: 1.9rem; color: var(--text-primary); }
+.hero-stat span{ font-family: var(--font-mono); font-size: var(--fs-micro); color: var(--text-muted); letter-spacing: .04em; }
+
+/* Hero layout + status panel filling the empty right column */
+.hero-inner{ display: grid; grid-template-columns: 1.15fr 0.85fr; gap: var(--sp-6); align-items: center; }
+.hero-panel{
+  background: rgba(18,21,28,0.68);
+  border: 1px solid var(--border-hair);
+  border-radius: var(--r-lg);
+  padding: var(--sp-4);
+  backdrop-filter: blur(10px);
+  box-shadow: var(--shadow-card);
+}
+.hero-panel-head{ display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--sp-3); }
+.hero-panel-title{
+  font-family: var(--font-mono); font-size: var(--fs-micro); text-transform: uppercase;
+  letter-spacing: .1em; color: var(--text-muted);
+}
+.hero-panel-live{
+  display: inline-flex; align-items: center; gap: .4rem;
+  font-family: var(--font-mono); font-size: var(--fs-micro); color: var(--signal-teal);
+}
+.hero-panel-live .dot{ width: 6px; height: 6px; border-radius: 50%; background: var(--signal-teal); box-shadow: 0 0 8px var(--signal-teal); animation: pulseDot 1.8s ease-in-out infinite; }
+@keyframes pulseDot{ 0%, 100%{ opacity: 1; } 50%{ opacity: .35; } }
+
+.hero-panel-list{ display: flex; flex-direction: column; }
+.hero-panel-item{
+  display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3);
+  padding: .8rem 0; border-bottom: 1px solid var(--border-hair);
+}
+.hero-panel-item:last-child{ border-bottom: none; }
+.hero-panel-item a{
+  display: flex; align-items: center; gap: var(--sp-2); min-width: 0;
+  transition: opacity var(--dur-fast);
+}
+.hero-panel-item a:hover{ opacity: .75; }
+.hero-panel-item-title{
+  font-size: var(--fs-small); color: var(--text-primary);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.hero-panel-item-time{ font-size: var(--fs-micro); color: var(--text-muted); flex-shrink: 0; }
+.hero-panel-foot{
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: var(--sp-3); padding-top: var(--sp-3);
+  border-top: 1px solid var(--border-soft);
+  font-family: var(--font-mono); font-size: var(--fs-micro);
+  color: var(--signal-teal); transition: gap var(--dur-fast);
+}
+.hero-panel-foot:hover{ gap: var(--sp-1); }
+
+/* ==========================================================================
+   10. FEATURED POST
+   ========================================================================== */
+.featured-card{
+  display: grid; grid-template-columns: 1.1fr 1fr; gap: var(--sp-5); align-items: stretch;
+  background: var(--bg-surface); border: 1px solid var(--border-hair); border-radius: var(--r-lg); overflow: hidden;
+  transition: border-color var(--dur-fast), transform var(--dur-fast) var(--ease-out);
+}
+.featured-card:hover{ border-color: var(--signal-teal); transform: translateY(-3px); }
+.featured-media{ position: relative; background: var(--bg-void); min-height: 280px; }
+.featured-media img{ position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.featured-media::after{
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(100deg, rgba(7,8,12,0.35), transparent 55%);
+}
+.featured-copy{ padding: var(--sp-5) var(--sp-5) var(--sp-5) 0; display: flex; flex-direction: column; gap: var(--sp-2); align-self: center; }
+.featured-copy h2{ font-size: clamp(1.4rem, 2.6vw, 2rem); }
+.post-meta{ color: var(--text-muted); font-size: var(--fs-micro); margin-top: var(--sp-2); }
+
+/* Editor's picks — secondary row */
+.picks-grid{
+  display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-4);
+  margin-top: var(--sp-4);
+}
+.pick-card{
+  display: grid; grid-template-columns: 130px 1fr; gap: var(--sp-3);
+  align-items: center;
+}
+.pick-media{ position: relative; aspect-ratio: 1/1; border-radius: var(--r-md); overflow: hidden; }
+.pick-media img{ position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.pick-card h3{ font-size: 1.05rem; margin-bottom: .3rem; }
+.pick-card p{ font-size: var(--fs-small); }
+
+/* ==========================================================================
+   11. ABOUT-THE-BLOG STRIP
+   ========================================================================== */
+.about-strip{
+  background: var(--bg-surface);
+  border-top: 1px solid var(--border-hair);
+  border-bottom: 1px solid var(--border-hair);
+}
+.about-grid{
+  display: grid; grid-template-columns: 1.1fr repeat(3, 1fr); gap: var(--sp-5);
+}
+.about-copy p{ margin-top: var(--sp-2); }
+.about-item{ display: flex; flex-direction: column; gap: var(--sp-1); }
+.about-item .num{ font-family: var(--font-mono); font-size: var(--fs-micro); color: var(--signal-teal); }
+.about-item h3{ font-size: 1.1rem; }
+.about-item p{ font-size: var(--fs-small); }
+
+/* ==========================================================================
+   12. FILTERS + GRID
+   ========================================================================== */
+.blog-filters{ display: flex; gap: var(--sp-2); flex-wrap: wrap; margin-bottom: var(--sp-4); }
+.filter-chip{
+  padding: .6rem 1.2rem; border-radius: var(--r-pill); border: 1px solid var(--border-soft);
+  font-size: var(--fs-small); color: var(--text-secondary); transition: all var(--dur-fast);
+}
+.filter-chip:hover{ border-color: var(--signal-indigo); color: var(--text-primary); }
+.filter-chip.is-active{ background: var(--text-primary); color: #07080c; border-color: var(--text-primary); }
+
+.blog-grid{ display: grid; grid-template-columns: repeat(3,1fr); gap: var(--sp-4); min-height: 200px; }
+.post-card{ display: flex; flex-direction: column; gap: var(--sp-2); }
+.post-card .post-thumb{
+  position: relative; aspect-ratio: 16/10; border-radius: var(--r-md); overflow: hidden; margin-bottom: var(--sp-2);
+}
+.post-card .post-thumb img{ position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform var(--dur-med) var(--ease-out); }
+.post-card:hover .post-thumb img{ transform: scale(1.06); }
+.post-card .post-thumb::after{ content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 60%, rgba(7,8,12,0.55)); }
+.post-card h3{ font-size: 1.15rem; }
+.post-card p{ font-size: var(--fs-small); }
+.post-fade{ animation: postIn .5s var(--ease-out); }
+.post-card.is-hidden{ display: none; }
+@keyframes postIn{ from{ opacity: 0; transform: translateY(14px); } to{ opacity: 1; transform: none; } }
+
+.pagination{ display: flex; justify-content: center; gap: var(--sp-2); margin-top: var(--sp-5); }
+.page-btn{
+  width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--border-soft);
+  font-family: var(--font-mono); font-size: var(--fs-small); color: var(--text-secondary);
+  display: flex; align-items: center; justify-content: center; transition: all var(--dur-fast);
+}
+.page-btn:hover{ border-color: var(--signal-indigo); color: var(--text-primary); }
+.page-btn.is-active{ background: var(--signal-indigo); border-color: var(--signal-indigo); color: #fff; }
+
+/* ==========================================================================
+   13. TOPICS + WRITERS
+   ========================================================================== */
+.topics{ border-top: 1px solid var(--border-hair); }
+.topics-grid{ display: flex; flex-wrap: wrap; gap: var(--sp-2); }
+.topic-pill{
+  display: inline-flex; align-items: center; gap: var(--sp-2);
+  padding: .7rem 1rem .7rem 1.2rem;
+  border: 1px solid var(--border-soft); border-radius: var(--r-pill);
+  font-size: var(--fs-small); color: var(--text-secondary);
+  transition: all var(--dur-fast);
+}
+.topic-pill:hover{ border-color: var(--signal-teal); color: var(--text-primary); transform: translateY(-2px); }
+.topic-count{
+  font-family: var(--font-mono); font-size: var(--fs-micro); color: var(--text-muted);
+  background: var(--bg-surface-2); border-radius: var(--r-pill); padding: .15rem .55rem;
+}
+
+.writers{ border-top: 1px solid var(--border-hair); }
+.writers-grid{ display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--sp-4); }
+.writer-card{ display: flex; flex-direction: column; gap: var(--sp-1); }
+.writer-avatar{
+  width: 48px; height: 48px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display); font-weight: 600; font-size: .95rem;
+  color: var(--text-on-accent);
+  background: linear-gradient(135deg, var(--avatar-a), var(--avatar-b));
+  margin-bottom: var(--sp-2);
+}
+.writer-card h3{ font-size: 1.05rem; }
+.writer-role{ font-size: var(--fs-micro); color: var(--text-muted); }
+.writer-card p{ font-size: var(--fs-small); margin-top: var(--sp-1); }
+
+/* ==========================================================================
+   14. NEWSLETTER
+   ========================================================================== */
+.newsletter{ background: var(--bg-void); border-top: 1px solid var(--border-hair); }
+.newsletter-inner{ display: flex; justify-content: space-between; align-items: center; gap: var(--sp-5); flex-wrap: wrap; }
+.newsletter-inner h2{ font-size: 1.8rem; }
+.newsletter-form{ display: flex; gap: var(--sp-2); min-width: 340px; }
+.newsletter-form input{
+  flex: 1; padding: .9rem 1.2rem; border-radius: var(--r-pill); border: 1px solid var(--border-soft);
+  background: var(--bg-surface); color: var(--text-primary);
+}
+.newsletter-form input:focus{ outline: none; border-color: var(--signal-teal); }
+
+/* ==========================================================================
+   15. RESPONSIVE
+   ========================================================================== */
+@media (max-width: 1180px){
+  .about-grid{ grid-template-columns: 1fr 1fr; row-gap: var(--sp-4); }
+}
+
+@media (max-width: 1024px){
+  .blog-grid{ grid-template-columns: repeat(2,1fr); }
+  .picks-grid{ grid-template-columns: 1fr; }
+  .writers-grid{ grid-template-columns: repeat(2, 1fr); gap: var(--sp-3); }
+}
+
+@media (max-width: 900px){
+  .nav-toggle{ display: flex; }
+  .nav-links{
+    position: fixed; inset: 0 0 0 auto; width: min(78vw,360px); height: 100vh;
+    background: var(--bg-surface); flex-direction: column; align-items: flex-start;
+    justify-content: center; gap: var(--sp-4); padding: var(--sp-6) var(--sp-5);
+    transform: translateX(100%); transition: transform var(--dur-med) var(--ease-in-out);
+    border-left: 1px solid var(--border-hair);
+  }
+  .nav-links.is-open{ transform: translateX(0); }
+  .nav-links a{ font-size: 1.4rem; }
+  .nav-actions .btn-ghost{ display: none; }
+
+  .featured-card{ grid-template-columns: 1fr; }
+  .featured-media{ min-height: 220px; }
+  .featured-copy{ padding: 0 var(--sp-4) var(--sp-4); }
+
+  .about-grid{ grid-template-columns: 1fr 1fr; }
+
+  .hero-inner{ grid-template-columns: 1fr; gap: var(--sp-4); }
+  .hero-panel{ max-width: 480px; }
+}
+
+@media (max-width: 800px){
+  .footer-top{ grid-template-columns: 1fr 1fr; }
+  .footer-brand{ grid-column: 1/-1; }
+}
+
+@media (max-width: 768px){
+  .section{ padding: var(--sp-5) 0; }
+  .about-grid{ grid-template-columns: 1fr; gap: var(--sp-4); }
+  .blog-hero{ padding: 128px 0 var(--sp-4); }
+}
+
+@media (max-width: 640px){
+  .container{ padding: 0 var(--sp-3); }
+  .newsletter-form{ min-width: 100%; flex-direction: column; }
+  .cursor-glow{ display: none; }
+}
+
+@media (max-width: 600px){
+  .blog-grid{ grid-template-columns: 1fr; }
+  .pick-card{ grid-template-columns: 84px 1fr; }
+  .hero-stat{ min-width: 130px; padding: var(--sp-2) var(--sp-3); }
+  .hero-stat strong{ font-size: 1.5rem; }
+  .writers-grid{ grid-template-columns: 1fr; }
+  .topic-pill{ padding: .6rem .9rem .6rem 1rem; }
+}
+
+@media (max-width: 420px){
+  .blog-hero-stats{ gap: var(--sp-2); }
+  .featured-copy{ padding: 0 var(--sp-3) var(--sp-3); }
+  .newsletter-inner h2{ font-size: 1.5rem; }
+  .pagination{ gap: var(--sp-1); }
+  .hero-panel{ padding: var(--sp-3); max-width: 100%; }
+  .hero-panel-item-title{ font-size: var(--fs-micro); }
+}
+
+</style>
+</head>
+<body>
+
+<div class="cursor-glow"></div>
+<div class="grain"></div>
+<div class="scroll-progress"></div>
+<!-- ============ PRELOADER ============ -->
+  <div class="loader" id="loader">
+    <div class="loader-inner">
+
+      <div class="loader-brand" id="loaderBrand" aria-hidden="true"></div>
+
+      <div class="loader-count"><span id="loaderPercent">0</span><small>%</small></div>
+      <div class="loader-status" id="loaderStatus">Establishing secure connection</div>
+
+      <div class="loader-track"><div class="loader-fill" id="loaderFill"></div></div>
+    </div>
+  </div>
+
+<header class="nav">
+  <div class="container nav-inner">
+    <a href="index.html" class="nav-logo">
+      <img src="./assets/stackly-removebg-preview.png" alt="STACKLY" class="nav-logo-img">
+      <!-- <span class="nav-logo-text">CLOUD</span> -->
+    </a>
+    <nav class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="about.html">About</a>
+      <a href="services.html">Services</a>
+      <a href="blog.html" class="is-active">Blog</a>
+      <a href="contact.html">Contact</a>
+    </nav>
+    <div class="nav-actions">
+      <a href="login.html" class="btn btn-primary">Login</a>
+      <!-- <a href="login.html" class="btn btn-ghost">Log in</a>
+      <a href="contact.html" class="btn btn-primary">Get started</a> -->
+    </div>
+    <button class="nav-toggle" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+  </div>
+</header>
+
+<main>
+
+  <!-- ============ HERO ============ -->
+  <section class="blog-hero">
+    <div class="blog-hero-bg" aria-hidden="true">
+      <img src="./assets/imresizer-server_rack.jpg" alt="" loading="eager">
+    </div>
+    <div class="container">
+      <div class="hero-inner">
+        <div class="hero-copy">
+          <div class="eyebrow" data-reveal>Engineering blog</div>
+          <h1 data-reveal>Notes from the people running the platform.</h1>
+          <p class="blog-hero-lead" data-reveal>Postmortems, architecture write-ups, and the occasional war story — published by the engineers who build and operate STACKLY Cloud, not a marketing team.</p>
+          <div class="blog-hero-stats" data-reveal>
+            <div class="hero-stat">
+              <strong><span data-count-to="184">0</span></strong>
+              <span>Posts published</span>
+            </div>
+            <div class="hero-stat">
+              <strong><span data-count-to="99.98" data-count-suffix="%">0%</span></strong>
+              <span>Platform uptime, trailing 90d</span>
+            </div>
+            <div class="hero-stat">
+              <strong><span data-count-to="41">0</span></strong>
+              <span>Engineers who've written a post</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-panel" data-reveal data-reveal-delay="120">
+          <div class="hero-panel-head">
+            <span class="hero-panel-title">Recently shipped</span>
+            <span class="hero-panel-live"><span class="dot"></span> Live</span>
+          </div>
+          <ul class="hero-panel-list">
+            <li class="hero-panel-item">
+              <a href="#">
+                <span class="badge badge-teal">reliability</span>
+                <span class="hero-panel-item-title">Cross-region failover cut to 400ms</span>
+              </a>
+              <span class="hero-panel-item-time text-mono">2d ago</span>
+            </li>
+            <li class="hero-panel-item">
+              <a href="#">
+                <span class="badge badge-amber">performance</span>
+                <span class="hero-panel-item-title">41 new edge points of presence</span>
+              </a>
+              <span class="hero-panel-item-time text-mono">6d ago</span>
+            </li>
+            <li class="hero-panel-item">
+              <a href="#">
+                <span class="badge badge-red">security</span>
+                <span class="hero-panel-item-title">Silent key rotation, region-wide</span>
+              </a>
+              <span class="hero-panel-item-time text-mono">9d ago</span>
+            </li>
+            <li class="hero-panel-item">
+              <a href="#">
+                <span class="badge badge-teal">reliability</span>
+                <span class="hero-panel-item-title">Autoscaling postmortem, in full</span>
+              </a>
+              <span class="hero-panel-item-time text-mono">12d ago</span>
+            </li>
+          </ul>
+          <a href="#" class="hero-panel-foot">
+            <span>Browse the full archive</span>
+            <span aria-hidden="true">→</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FEATURED + EDITOR'S PICKS ============ -->
+  <section class="section section-tight featured">
+    <div class="container">
+      <a href="#" class="featured-card" data-reveal>
+        <div class="featured-media" aria-hidden="true">
+          <img src="./assets/imresizer-server_rack.jpg" alt="Rows of servers in a STACKLY Cloud data center" loading="lazy">
+        </div>
+        <div class="featured-copy">
+          <span class="badge">reliability</span>
+          <h2>How we cut cross-region failover to under 400 milliseconds</h2>
+          <p>A breakdown of the health-check architecture, anycast tuning, and the three false starts that got us there.</p>
+          <span class="post-meta text-mono">David Osei · June 18, 2026 · 9 min read</span>
+        </div>
+      </a>
+
+      <div class="picks-grid">
+        <a href="#" class="pick-card card" data-reveal>
+          <div class="pick-media">
+            <img src="./assets/image_49.jpg" alt="Macro shot of a circuit board" loading="lazy">
+          </div>
+          <div>
+            <span class="badge badge-teal">reliability</span>
+            <h3>Zero-downtime schema migrations, five years in</h3>
+            <p>What changed after our worst migration incident, and the tooling we built so it can't happen twice.</p>
+          </div>
+        </a>
+        <a href="#" class="pick-card card" data-reveal>
+          <div class="pick-media">
+            <img src="./assets/imresizer-fiber_optic_image.jpg" alt="Blue fiber optic light trails" loading="lazy">
+          </div>
+          <div>
+            <span class="badge badge-amber">performance</span>
+            <h3>Inside the edge network: 41 new points of presence</h3>
+            <p>How we picked new regions, and what latency actually looked like before and after.</p>
+          </div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ABOUT THE BLOG ============ -->
+  <section class="section section-tight about-strip">
+    <div class="container about-grid">
+      <div class="about-copy" data-reveal>
+        <div class="eyebrow">Why we write</div>
+        <p>Most of what happens inside a cloud platform never gets written down. This is where we write it down anyway — the design docs that shipped, the ones that didn't, and the incidents that taught us more than either.</p>
+      </div>
+      <div class="about-item" data-reveal>
+        <span class="num">Reliability</span>
+        <h3>Postmortems, in full</h3>
+        <p>Unedited incident timelines, root causes, and the follow-up work — published whether or not it's flattering.</p>
+      </div>
+      <div class="about-item" data-reveal data-reveal-delay="80">
+        <span class="num">Performance</span>
+        <h3>Numbers, not adjectives</h3>
+        <p>Before/after benchmarks with methodology included, so you can push back on our conclusions.</p>
+      </div>
+      <div class="about-item" data-reveal data-reveal-delay="160">
+        <span class="num">Security & Product</span>
+        <h3>Decisions, explained</h3>
+        <p>Why a feature shipped the way it did, and the alternatives we ruled out along the way.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FILTERS + GRID ============ -->
+  <section class="section blog-grid-section">
+    <div class="container">
+      <div class="section-head" data-reveal>
+        <div class="eyebrow">Latest posts</div>
+        <h2>Everything we've shipped, broken, and fixed.</h2>
+      </div>
+
+      <div class="blog-filters" data-reveal>
+        <button class="filter-chip is-active" data-filter="all">All</button>
+        <button class="filter-chip" data-filter="reliability">Reliability</button>
+        <button class="filter-chip" data-filter="performance">Performance</button>
+        <button class="filter-chip" data-filter="security">Security</button>
+        <button class="filter-chip" data-filter="product">Product</button>
+      </div>
+
+      <div class="blog-grid" id="blogGrid">
+
+        <a href="#" class="post-card card" data-category="product" data-reveal>
+          <div class="post-thumb">
+            <img src="./assets/Developer workspace.jpg" alt="A developer's multi-monitor workspace at night" loading="lazy">
+          </div>
+          <span class="badge">product</span>
+          <h3>What we learned migrating 12,000 services to the new console</h3>
+          <p>The rollout plan, the rollback plan we thankfully didn't need, and the one team that broke everything.</p>
+          <span class="post-meta text-mono">Priya Raman · June 11, 2026 · 7 min read</span>
+        </a>
+
+        <a href="#" class="post-card card" data-category="security" data-reveal>
+          <div class="post-thumb">
+            <img src="./assets/image_50.jpg" alt="A padlock resting on a keyboard" loading="lazy">
+          </div>
+          <span class="badge badge-red">security</span>
+          <h3>How we rotate encryption keys without anyone noticing</h3>
+          <p>Zero-downtime key rotation across every region, and the edge cases that took two quarters to close.</p>
+          <span class="post-meta text-mono">Marcus Webb · June 5, 2026 · 6 min read</span>
+        </a>
+
+        <a href="#" class="post-card card" data-category="reliability" data-reveal>
+          <div class="post-thumb">
+            <img src="./assets/imresizer-server_rack.jpg" alt="Server rack corridor in a data center" loading="lazy">
+          </div>
+          <span class="badge badge-teal">reliability</span>
+          <h3>Autoscaling postmortem: the day compute doubled by accident</h3>
+          <p>A feedback loop between two scaling policies nobody thought to test together. Full timeline inside.</p>
+          <span class="post-meta text-mono">David Osei · May 29, 2026 · 8 min read</span>
+        </a>
+
+        <a href="#" class="post-card card" data-category="performance" data-reveal>
+          <div class="post-thumb">
+            <img src="./assets/imresizer-fiber_optic_image.jpg" alt="Blue fiber optic light trails in the dark" loading="lazy">
+          </div>
+          <span class="badge badge-amber">performance</span>
+          <h3>Shaving 60ms off cold starts in the compute runtime</h3>
+          <p>Three unglamorous changes to the runtime init path, benchmarked across every instance family we run.</p>
+          <span class="post-meta text-mono">Lena Fischer · May 21, 2026 · 5 min read</span>
+        </a>
+
+        <a href="#" class="post-card card" data-category="security" data-reveal>
+          <div class="post-thumb">
+            <img src="./assets/image_50.jpg" alt="Close-up of a circuit board" loading="lazy">
+          </div>
+          <span class="badge badge-red">security</span>
+          <h3>Least-privilege by default: rethinking IAM roles</h3>
+          <p>Why we shipped stricter default permissions even though it broke a meaningful slice of existing setups.</p>
+          <span class="post-meta text-mono">Marcus Webb · May 14, 2026 · 6 min read</span>
+        </a>
+
+        <a href="#" class="post-card card" data-category="product" data-reveal>
+          <div class="post-thumb">
+            <img src="./assets/Developer workspace.jpg" alt="A developer reviewing code on multiple screens" loading="lazy">
+          </div>
+          <span class="badge">product</span>
+          <h3>Why our console team ships behind a private beta flag</h3>
+          <p>The internal review process that stands between a merged PR and 90,000 customer dashboards.</p>
+          <span class="post-meta text-mono">Priya Raman · May 8, 2026 · 4 min read</span>
+        </a>
+
+        <a href="#" class="post-card card" data-category="reliability" data-reveal>
+          <div class="post-thumb">
+            <img src="./assets/image_49.jpg" alt="Close-up of a circuit board" loading="lazy">
+          </div>
+          <span class="badge badge-teal">reliability</span>
+          <h3>We turned off a datacenter on purpose. Here's what broke.</h3>
+          <p>A planned regional drill uncovered four services that quietly assumed one region would always be up.</p>
+          <span class="post-meta text-mono">David Osei · April 30, 2026 · 7 min read</span>
+        </a>
+
+        <a href="#" class="post-card card" data-category="performance" data-reveal>
+          <div class="post-thumb">
+            <img src="./assets/imresizer-server_rack.jpg" alt="Server rack corridor in a data center" loading="lazy">
+          </div>
+          <span class="badge badge-amber">performance</span>
+          <h3>Rewriting our object storage hot path in Rust</h3>
+          <p>Why we finally moved off the old Go service, and the 3.2x throughput number that justified the rewrite.</p>
+          <span class="post-meta text-mono">Lena Fischer · April 22, 2026 · 8 min read</span>
+        </a>
+
+        <a href="#" class="post-card card" data-category="product" data-reveal>
+          <div class="post-thumb">
+            <img src="./assets/Developer workspace.jpg" alt="Close-up of a laptop keyboard at night" loading="lazy">
+          </div>
+          <span class="badge">product</span>
+          <h3>Designing the new billing dashboard with actual customers</h3>
+          <p>Six rounds of usability testing, one dashboard we scrapped entirely, and what customers asked for instead.</p>
+          <span class="post-meta text-mono">Priya Raman · April 14, 2026 · 5 min read</span>
+        </a>
+
+      </div>
+
+      <div class="pagination" id="pagination">
+        <button class="page-btn is-active" aria-label="Page 1" aria-current="page">1</button>
+        <button class="page-btn" aria-label="Page 2">2</button>
+        <button class="page-btn" aria-label="Page 3">3</button>
+        <button class="page-btn" aria-label="Next page">→</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ POPULAR TOPICS ============ -->
+  <section class="section-tight topics">
+    <div class="container">
+      <div class="section-head" data-reveal>
+        <div class="eyebrow">Browse by topic</div>
+        <h2>Or jump straight to what you're chasing.</h2>
+      </div>
+      <div class="topics-grid" data-reveal>
+        <a href="#" class="topic-pill"><span>Incident response</span><span class="topic-count">23</span></a>
+        <a href="#" class="topic-pill"><span>Autoscaling</span><span class="topic-count">14</span></a>
+        <a href="#" class="topic-pill"><span>Edge network</span><span class="topic-count">19</span></a>
+        <a href="#" class="topic-pill"><span>IAM & access</span><span class="topic-count">11</span></a>
+        <a href="#" class="topic-pill"><span>Object storage</span><span class="topic-count">17</span></a>
+        <a href="#" class="topic-pill"><span>Key management</span><span class="topic-count">9</span></a>
+        <a href="#" class="topic-pill"><span>Console & UX</span><span class="topic-count">15</span></a>
+        <a href="#" class="topic-pill"><span>Cost & billing</span><span class="topic-count">12</span></a>
+        <a href="#" class="topic-pill"><span>Postmortems</span><span class="topic-count">31</span></a>
+        <a href="#" class="topic-pill"><span>Migrations</span><span class="topic-count">18</span></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ MEET THE WRITERS ============ -->
+  <section class="section section-tight writers">
+    <div class="container">
+      <div class="section-head" data-reveal>
+        <div class="eyebrow">Meet the writers</div>
+        <h2>The engineers behind the byline.</h2>
+        <p>No ghostwriters, no marketing pass. If a name is on a post, they wrote it and they're the one who'll answer for it.</p>
+      </div>
+      <div class="writers-grid">
+        <div class="writer-card card" data-reveal>
+          <span class="writer-avatar" style="--avatar-a:var(--signal-indigo); --avatar-b:var(--signal-teal);">DO</span>
+          <h3>David Osei</h3>
+          <span class="writer-role text-mono">Staff Engineer, Reliability</span>
+          <p>Runs the failover and incident-response tooling. Writes the postmortems nobody wants to write.</p>
+        </div>
+        <div class="writer-card card" data-reveal data-reveal-delay="80">
+          <span class="writer-avatar" style="--avatar-a:var(--signal-amber); --avatar-b:var(--signal-copper);">LF</span>
+          <h3>Lena Fischer</h3>
+          <span class="writer-role text-mono">Senior Engineer, Performance</span>
+          <p>Owns the compute runtime and object storage hot path. Measures everything twice before publishing.</p>
+        </div>
+        <div class="writer-card card" data-reveal data-reveal-delay="160">
+          <span class="writer-avatar" style="--avatar-a:var(--signal-red); --avatar-b:var(--signal-indigo);">MW</span>
+          <h3>Marcus Webb</h3>
+          <span class="writer-role text-mono">Security Engineer</span>
+          <p>Key management, IAM, and the person who reviews every "just this once" access request.</p>
+        </div>
+        <div class="writer-card card" data-reveal data-reveal-delay="240">
+          <span class="writer-avatar" style="--avatar-a:var(--signal-teal); --avatar-b:var(--signal-indigo);">PR</span>
+          <h3>Priya Raman</h3>
+          <span class="writer-role text-mono">Product Engineer, Console</span>
+          <p>Ships the console you actually click around in, and writes up why it looks the way it does.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ NEWSLETTER ============ -->
+  <section class="section section-tight newsletter">
+    <div class="container newsletter-inner" data-reveal>
+      <div>
+        <h2>Get new posts by email.</h2>
+        <p>One email a week. Unsubscribe whenever.</p>
+      </div>
+      <form class="newsletter-form" id="newsletterForm" novalidate>
+        <input type="email" placeholder="you@company.com" required aria-label="Email address">
+        <button type="submit" class="btn btn-accent">Subscribe</button>
+      </form>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <a href="index.html" class="nav-logo">
+          <img src="./assets/stackly-removebg-preview.png" alt="STACKLY" class="nav-logo-img">
+          <!-- <span class="nav-logo-text">CLOUD</span> -->
+        </a>
+        <p>Enterprise cloud infrastructure — compute, storage, networking and data — built for teams that run production.</p>
+
+        <!-- ============ SOCIAL MEDIA ICONS (inline CSS) ============ -->
+        <div style="display:flex; align-items:center; gap:12px; margin-top:22px;">
+
+          <!-- Facebook -->
+          <a href="error.html" aria-label="Facebook" target="_blank" rel="noopener noreferrer"
+             style="display:flex; align-items:center; justify-content:center; width:38px; height:38px; border-radius:50%; background:rgba(232,234,237,0.06); border:1px solid rgba(232,234,237,0.14); color:#a7aebc; transition:all 0.25s ease; flex:none;"
+             onmouseover="this.style.background='#5b7fff'; this.style.borderColor='#5b7fff'; this.style.color='#07080c'; this.style.transform='translateY(-3px)';"
+             onmouseout="this.style.background='rgba(232,234,237,0.06)'; this.style.borderColor='rgba(232,234,237,0.14)'; this.style.color='#a7aebc'; this.style.transform='translateY(0)';">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="pointer-events:none;">
+              <path d="M14 13.5H16.5L17.5 9.5H14V7.5C14 6.47 14 5.5 16 5.5H17.5V2.14C17.17 2.097 15.94 2 14.64 2C11.93 2 10 3.657 10 6.7V9.5H7V13.5H10V22H14V13.5Z" fill="currentColor"/>
+            </svg>
+          </a>
+
+          <!-- Instagram -->
+          <a href="error.html" aria-label="Instagram" target="_blank" rel="noopener noreferrer"
+             style="display:flex; align-items:center; justify-content:center; width:38px; height:38px; border-radius:50%; background:rgba(232,234,237,0.06); border:1px solid rgba(232,234,237,0.14); color:#a7aebc; transition:all 0.25s ease; flex:none;"
+             onmouseover="this.style.background='#5b7fff'; this.style.borderColor='#5b7fff'; this.style.color='#07080c'; this.style.transform='translateY(-3px)';"
+             onmouseout="this.style.background='rgba(232,234,237,0.06)'; this.style.borderColor='rgba(232,234,237,0.14)'; this.style.color='#a7aebc'; this.style.transform='translateY(0)';">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="pointer-events:none;">
+              <rect x="2" y="2" width="20" height="20" rx="5" stroke="currentColor" stroke-width="2"/>
+              <circle cx="12" cy="12" r="4.2" stroke="currentColor" stroke-width="2"/>
+              <circle cx="17.4" cy="6.6" r="1.2" fill="currentColor"/>
+            </svg>
+          </a>
+
+          <!-- LinkedIn -->
+          <a href="error.html" aria-label="LinkedIn" target="_blank" rel="noopener noreferrer"
+             style="display:flex; align-items:center; justify-content:center; width:38px; height:38px; border-radius:50%; background:rgba(232,234,237,0.06); border:1px solid rgba(232,234,237,0.14); color:#a7aebc; transition:all 0.25s ease; flex:none;"
+             onmouseover="this.style.background='#5b7fff'; this.style.borderColor='#5b7fff'; this.style.color='#07080c'; this.style.transform='translateY(-3px)';"
+             onmouseout="this.style.background='rgba(232,234,237,0.06)'; this.style.borderColor='rgba(232,234,237,0.14)'; this.style.color='#a7aebc'; this.style.transform='translateY(0)';">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="pointer-events:none;">
+              <rect x="2" y="2" width="20" height="20" rx="4" stroke="currentColor" stroke-width="2"/>
+              <line x1="7" y1="10" x2="7" y2="17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <circle cx="7" cy="6.8" r="1.3" fill="currentColor"/>
+              <path d="M11.5 17V10M11.5 13C11.5 11.3 12.5 10 14.2 10C15.8 10 16.5 11.1 16.5 13V17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
+
+          <!-- YouTube -->
+          <a href="error.html" aria-label="YouTube" target="_blank" rel="noopener noreferrer"
+             style="display:flex; align-items:center; justify-content:center; width:38px; height:38px; border-radius:50%; background:rgba(232,234,237,0.06); border:1px solid rgba(232,234,237,0.14); color:#a7aebc; transition:all 0.25s ease; flex:none;"
+             onmouseover="this.style.background='#5b7fff'; this.style.borderColor='#5b7fff'; this.style.color='#07080c'; this.style.transform='translateY(-3px)';"
+             onmouseout="this.style.background='rgba(232,234,237,0.06)'; this.style.borderColor='rgba(232,234,237,0.14)'; this.style.color='#a7aebc'; this.style.transform='translateY(0)';">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="pointer-events:none;">
+              <path d="M21.5 7.6C21.27 6.63 20.5 5.86 19.55 5.63C17.86 5.2 12 5.2 12 5.2C12 5.2 6.14 5.2 4.45 5.63C3.5 5.86 2.73 6.63 2.5 7.6C2.08 9.32 2.08 12 2.08 12C2.08 12 2.08 14.68 2.5 16.4C2.73 17.37 3.5 18.11 4.45 18.34C6.14 18.77 12 18.77 12 18.77C12 18.77 17.86 18.77 19.55 18.34C20.5 18.11 21.27 17.37 21.5 16.4C21.92 14.68 21.92 12 21.92 12C21.92 12 21.92 9.32 21.5 7.6Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+              <path d="M10 9.6L14.6 12L10 14.4V9.6Z" fill="currentColor"/>
+            </svg>
+          </a>
+
+        </div>
+        <!-- ============ /SOCIAL MEDIA ICONS ============ -->
+
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <a href="index.html">Home</a>
+        <a href="about.html">About</a>
+       <a href="services.html">Services</a>
+        <a href="blog.html">Blog</a>
+        <a href="contact.html">Contact</a>
+      </div>
+      <div class="footer-col">
+        <h4>Product</h4>
+        <a href="services.html">Compute</a>
+        <a href="services.html">Storage</a>
+        <a href="services.html">Networking</a>
+        <a href="services.html">Data services</a>
+      </div>
+      <div class="footer-col">
+        <h4>Resources</h4>
+        <a href="error.html">Engineering blog</a>
+        <a href="error.html">Support</a>
+        <a href="error.html">Status page</a>
+        <a href="error.html">Documentation</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; 2026 STACKLY Cloud. All rights reserved.</span>
+      <span class="footer-status"><span class="dot"></span> All systems operational</span>
+    </div>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script>
+
+  (function () {
+  "use strict";
+
+  const loaderFill = document.getElementById("loaderFill");
+  const percentEl  = document.getElementById("loaderPercent");
+  const statusEl   = document.getElementById("loaderStatus");
+  const loaderEl   = document.getElementById("loader");
+  const brandEl    = document.getElementById("loaderBrand");
+
+  const statusSteps = [
+    { at: 0,  text: "Establishing secure connection" },
+    { at: 25, text: "Provisioning compute nodes" },
+    { at: 50, text: "Syncing regional caches" },
+    { at: 75, text: "Verifying data integrity" },
+    { at: 95, text: "Finalizing session" }
+  ];
+
+  // build the "STACKLY" wordmark once, letter by letter, staggered
+  (function buildBrandText() {
+    const word = "STACKLY";
+    word.split("").forEach((ch, i) => {
+      const span = document.createElement("span");
+      span.textContent = ch;
+      span.style.animationDelay = (i * 0.06) + "s";
+      brandEl.appendChild(span);
+    });
+  })();
+
+  let runToken = 0; // guards against overlapping runs if the loader is ever re-triggered
+
+  function runLoader() {
+    const myToken = ++runToken;
+
+    loaderEl.classList.remove("is-hidden");
+    percentEl.textContent = "0";
+    loaderFill.style.width = "0%";
+    statusEl.textContent = statusSteps[0].text;
+
+    // reset + restart the brand letter animation
+    brandEl.querySelectorAll("span").forEach((span) => {
+      span.style.animation = "none";
+      void span.offsetWidth; // force reflow so the animation can replay
+      span.style.animation = "";
+    });
+
+    let progress = 0;
+    let lastStatus = statusSteps[0].text;
+
+    function tick() {
+      if (myToken !== runToken) return; // a newer run has superseded this one
+
+      // uneven increments read as more "real" than a linear fill
+      progress += Math.random() * 6 + 2;
+      if (progress > 100) progress = 100;
+
+      const pct = Math.round(progress);
+      percentEl.textContent = pct;
+      loaderFill.style.width = pct + "%";
+
+      const step = [...statusSteps].reverse().find((s) => progress >= s.at);
+      if (step && step.text !== lastStatus) {
+        statusEl.classList.add("is-fading");
+        setTimeout(() => {
+          if (myToken !== runToken) return;
+          statusEl.textContent = step.text;
+          statusEl.classList.remove("is-fading");
+        }, 180);
+        lastStatus = step.text;
+      }
+
+      if (progress < 100) {
+        setTimeout(tick, 160);
+      } else {
+        document.body.classList.add("site-ready");
+        setTimeout(() => {
+          if (myToken !== runToken) return;
+          loaderEl.classList.add("is-hidden");
+        }, 500);
+      }
+    }
+    tick();
+  }
+
+  window.addEventListener("load", runLoader);
+})();
+
+(function () {
+  "use strict";
+
+  document.documentElement.classList.add("js");
+
+  /* ---------------- Scroll progress bar ---------------- */
+  const progress = document.querySelector(".scroll-progress");
+  function updateProgress() {
+    if (!progress) return;
+    const h = document.documentElement;
+    const scrolled = (h.scrollTop) / (h.scrollHeight - h.clientHeight) * 100;
+    progress.style.width = (isFinite(scrolled) ? scrolled : 0) + "%";
+  }
+  document.addEventListener("scroll", updateProgress, { passive: true });
+
+  /* ---------------- Navbar scroll state + mobile toggle ---------------- */
+  const nav = document.querySelector(".nav");
+  function updateNav() {
+    if (!nav) return;
+    nav.classList.toggle("is-scrolled", window.scrollY > 40);
+  }
+  document.addEventListener("scroll", updateNav, { passive: true });
+  updateNav();
+
+  const navToggle = document.querySelector(".nav-toggle");
+  const navLinks = document.querySelector(".nav-links");
+  if (navToggle && navLinks) {
+    navToggle.addEventListener("click", () => {
+      const isOpen = navLinks.classList.toggle("is-open");
+      navToggle.classList.toggle("is-open", isOpen);
+      document.body.style.overflow = isOpen ? "hidden" : "";
+    });
+    navLinks.querySelectorAll("a").forEach((a) =>
+      a.addEventListener("click", () => {
+        navLinks.classList.remove("is-open");
+        navToggle.classList.remove("is-open");
+        document.body.style.overflow = "";
+      })
+    );
+  }
+
+  /* ---------------- Scroll reveal (IntersectionObserver) ---------------- */
+  const revealEls = document.querySelectorAll("[data-reveal]");
+  if ("IntersectionObserver" in window && revealEls.length) {
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const delay = entry.target.dataset.revealDelay || 0;
+            setTimeout(() => entry.target.classList.add("is-visible"), Number(delay));
+            io.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.14, rootMargin: "0px 0px -60px 0px" }
+    );
+    revealEls.forEach((el) => io.observe(el));
+  } else {
+    revealEls.forEach((el) => el.classList.add("is-visible"));
+  }
+
+  /* ---------------- Cursor glow (desktop only) ---------------- */
+  const glow = document.querySelector(".cursor-glow");
+  if (glow && window.matchMedia("(pointer:fine)").matches) {
+    window.addEventListener("mousemove", (e) => {
+      glow.style.transform = `translate(${e.clientX}px, ${e.clientY}px) translate(-50%,-50%)`;
+    });
+  }
+
+  /* ---------------- Animated counters (data-count-to) ---------------- */
+  function animateCount(el) {
+    const target = parseFloat(el.dataset.countTo);
+    const decimals = (el.dataset.countTo.split(".")[1] || "").length;
+    const suffix = el.dataset.countSuffix || "";
+    const dur = 1600;
+    const start = performance.now();
+    function tick(now) {
+      const p = Math.min((now - start) / dur, 1);
+      const eased = 1 - Math.pow(1 - p, 3);
+      el.textContent = (target * eased).toFixed(decimals) + suffix;
+      if (p < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }
+  const counters = document.querySelectorAll("[data-count-to]");
+  if ("IntersectionObserver" in window && counters.length) {
+    const cio = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            animateCount(entry.target);
+            cio.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.6 }
+    );
+    counters.forEach((el) => cio.observe(el));
+  }
+
+  /* ---------------- Blog category filters ---------------- */
+  const chips = document.querySelectorAll(".filter-chip");
+  const posts = document.querySelectorAll("#blogGrid .post-card");
+  chips.forEach((chip) => {
+    chip.addEventListener("click", () => {
+      chips.forEach((c) => c.classList.remove("is-active"));
+      chip.classList.add("is-active");
+      const filter = chip.dataset.filter;
+      posts.forEach((post) => {
+        const match = filter === "all" || post.dataset.category === filter;
+        post.classList.toggle("is-hidden", !match);
+        if (match) post.classList.add("post-fade");
+      });
+    });
+  });
+
+  /* ---------------- Pagination (visual, single-page dataset) ---------------- */
+  const pageBtns = document.querySelectorAll(".page-btn[aria-label^='Page']");
+  pageBtns.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      pageBtns.forEach((b) => { b.classList.remove("is-active"); b.removeAttribute("aria-current"); });
+      btn.classList.add("is-active");
+      btn.setAttribute("aria-current", "page");
+      document.querySelector(".blog-grid-section").scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  });
+
+  /* ---------------- Newsletter form (front-end only) ---------------- */
+  const newsletterForm = document.getElementById("newsletterForm");
+  if (newsletterForm) {
+    newsletterForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const input = newsletterForm.querySelector("input[type='email']");
+      const btn = newsletterForm.querySelector("button");
+      if (!input.value) return;
+      btn.textContent = "Subscribed ✓";
+      btn.disabled = true;
+      input.value = "";
+    });
+  }
+
+  /* ---------------- GSAP registration (available for future use) ---------------- */
+  window.STACKLY = window.STACKLY || {};
+  window.STACKLY.gsapReady = function (cb) {
+    if (window.gsap) {
+      if (window.ScrollTrigger) gsap.registerPlugin(ScrollTrigger);
+      cb(window.gsap);
+    }
+  };
+})();
+</script>
+</body>
+</html>

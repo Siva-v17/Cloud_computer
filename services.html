@@ -1,0 +1,1390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Services — STACKLY Cloud</title>
+<meta name="description" content="Compute, storage, networking and data services from STACKLY Cloud — specs, pricing and use cases.">
+<link rel="icon" href="./assets/images/stackly-removebg-preview.png">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./css/variables.css">
+<link rel="stylesheet" href="./css/base.css">
+<link rel="stylesheet" href="./css/components.css">
+<link rel="stylesheet" href="./css/services.css">
+<style>
+
+:root{
+  /* Core surfaces */
+  --bg-void:        #07080c;
+  --bg-base:        #0b0d12;
+  --bg-surface:     #12151c;
+  --bg-surface-2:   #191d27;
+  --bg-elevated:    #20242f;
+  --border-hair:    rgba(232,234,237,0.08);
+  --border-soft:    rgba(232,234,237,0.14);
+
+  /* Signal accents */
+  --signal-indigo:      #5b7fff;
+  --signal-indigo-dim:  #3a4d99;
+  --signal-teal:        #00e5a0;
+  --signal-teal-dim:    #0a5c46;
+  --signal-copper:      #ff7a45;
+  --signal-amber:       #ffb648;
+  --signal-red:         #ff5470;
+
+  /* Text */
+  --text-primary:   #eef0f3;
+  --text-secondary: #a7aebc;
+  --text-muted:     #6b7284;
+  --text-on-accent: #07080c;
+
+  /* Type families */
+  --font-display: 'Space Grotesk', sans-serif;
+  --font-body:    'Inter', sans-serif;
+  --font-mono:    'JetBrains Mono', monospace;
+
+  /* Type scale */
+  --fs-hero:   clamp(3.2rem, 7vw, 7.2rem);
+  --fs-h1:     clamp(2.4rem, 4.4vw, 4.4rem);
+  --fs-h2:     clamp(1.9rem, 3.2vw, 3rem);
+  --fs-h3:     clamp(1.4rem, 2vw, 1.9rem);
+  --fs-lead:   clamp(1.1rem, 1.6vw, 1.35rem);
+  --fs-body:   1rem;
+  --fs-small:  0.875rem;
+  --fs-micro:  0.75rem;
+
+  /* Spacing */
+  --sp-1: 0.4rem;
+  --sp-2: 0.8rem;
+  --sp-3: 1.6rem;
+  --sp-4: 2.4rem;
+  --sp-5: 4rem;
+  --sp-6: 5.6rem;   /* standard section padding (reduced from 6.4rem) */
+  --sp-7: 7.2rem;   /* hero-only padding (reduced from 9.6rem) */
+
+  /* Motion */
+  --ease-out: cubic-bezier(.16,.84,.44,1);
+  --ease-in-out: cubic-bezier(.65,0,.35,1);
+  --dur-fast: .22s;
+  --dur-med: .5s;
+  --dur-slow: .9s;
+
+  /* Radius */
+  --r-sm: 6px;
+  --r-md: 12px;
+  --r-lg: 20px;
+  --r-pill: 999px;
+
+  /* Container */
+  --container: 1360px;
+
+  /* Shadows / glow */
+  --glow-indigo: 0 0 40px rgba(91,127,255,0.35);
+  --glow-teal: 0 0 40px rgba(0,229,160,0.28);
+  --shadow-card: 0 20px 60px -20px rgba(0,0,0,0.55);
+}
+
+@media (prefers-reduced-motion: reduce){
+  *{ animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; scroll-behavior: auto !important; }
+}
+
+/* ---------- 2. Reset & base ---------- */
+*, *::before, *::after{ box-sizing: border-box; margin:0; padding:0; }
+html{ scroll-behavior: smooth; }
+html, body{ height:100%; }
+body{
+  background: var(--bg-base);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+img, svg{ display:block; max-width:100%; }
+img{ height:auto; }
+a{ color:inherit; text-decoration:none; }
+ul, ol{ list-style:none; }
+button{ font-family:inherit; cursor:pointer; border:none; background:none; color:inherit; }
+input, textarea, select{ font-family:inherit; font-size:inherit; color:inherit; }
+
+h1,h2,h3,h4{ font-family: var(--font-display); font-weight:600; line-height:1.08; letter-spacing:-0.02em; }
+h1{ font-size: var(--fs-h1); }
+h2{ font-size: var(--fs-h2); }
+h3{ font-size: var(--fs-h3); }
+p{ color: var(--text-secondary); }
+
+::selection{ background: var(--signal-indigo); color:#fff; }
+
+:focus-visible{
+  outline: 2px solid var(--signal-teal);
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar{ width:10px; }
+::-webkit-scrollbar-track{ background: var(--bg-base); }
+::-webkit-scrollbar-thumb{ background: var(--bg-elevated); border-radius: 10px; }
+
+/* ---------- 3. Layout helpers ---------- */
+.container{
+  width: 100%;
+  max-width: var(--container);
+  margin: 0 auto;
+  padding: 0 var(--sp-4);
+}
+
+.eyebrow{
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--signal-teal);
+  display:flex;
+  align-items:center;
+  gap: var(--sp-2);
+}
+.eyebrow::before{
+  content:'';
+  width:6px; height:6px; border-radius:50%;
+  background: var(--signal-teal);
+  box-shadow: 0 0 10px var(--signal-teal);
+}
+
+.text-mono{ font-family: var(--font-mono); }
+.text-muted{ color: var(--text-muted); }
+.text-grad{
+  background: linear-gradient(100deg, var(--signal-indigo), var(--signal-teal));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ==========================================================================
+   5. PRELOADER
+   ========================================================================== */
+.loader{
+  position: fixed; inset: 0; z-index: 9999;
+  background: var(--bg-void);
+  display:flex; align-items:center; justify-content:center;
+  transition: opacity var(--dur-slow) var(--ease-in-out), visibility var(--dur-slow);
+}
+.loader.is-hidden{ opacity:0; visibility:hidden; pointer-events:none; }
+
+.loader-inner{
+  display:flex; flex-direction:column; align-items:center; gap:1.6rem;
+  width:min(90vw, 340px);
+}
+
+/* ---- brand wordmark: letters stagger in on load ---- */
+.loader-brand{
+  display:flex; gap:.12em;
+  font-family: var(--font-display); font-weight:600; font-size:1.1rem;
+  letter-spacing:.16em; text-transform:uppercase; color: var(--text-primary);
+}
+.loader-brand span{
+  opacity:0; transform: translateY(10px);
+  animation: letterIn .5s var(--ease-out) forwards;
+}
+
+@keyframes letterIn{
+  to{ opacity:1; transform: translateY(0); }
+}
+
+/* ---- percentage + status ---- */
+.loader-count{
+  font-family:var(--font-display); font-weight:600;
+  font-size:2.6rem; letter-spacing:-0.02em; color:var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+.loader-count small{ font-family:var(--font-mono); font-size:1.1rem; color:var(--text-muted); font-weight:400; }
+
+.loader-status{
+  font-family: var(--font-mono);
+  font-size:.78rem; letter-spacing:.06em; color:var(--text-muted);
+  height:1.2em; text-align:center;
+  transition: opacity var(--dur-fast) ease, transform var(--dur-fast) ease;
+}
+.loader-status.is-fading{ opacity:0; transform: translateY(4px); }
+
+.loader-track{
+  width:100%; height:2px; background:var(--bg-surface); border-radius:999px; overflow:hidden;
+  border:1px solid var(--border-hair);
+}
+.loader-fill{
+  height:100%; width:0%;
+  background:linear-gradient(90deg, var(--signal-indigo), var(--signal-teal));
+  transition:width .18s linear;
+}
+
+/* Section scaffolding — single top+bottom padding per section keeps the
+   rhythm between blocks consistent instead of stacking two paddings. */
+.section{ padding: var(--sp-6) 0; position: relative; }
+.section + .section{ padding-top: 0; }
+.section-head{ max-width: 720px; margin-bottom: var(--sp-5); }
+.section-head h2{ margin-top: var(--sp-2); }
+.section-head p{ margin-top: var(--sp-3); font-size: var(--fs-lead); }
+
+/* Scroll reveal base state (JS toggles .is-visible) */
+[data-reveal]{ opacity: 0; transform: translateY(36px); }
+[data-reveal].is-visible{
+  opacity: 1; transform: translateY(0);
+  transition: opacity 1s var(--ease-out), transform 1s var(--ease-out);
+}
+
+/* Page loader */
+.loader{
+  position: fixed; inset: 0; z-index: 9999;
+  background: var(--bg-void);
+  display:flex; align-items:center; justify-content:center;
+  transition: opacity .6s var(--ease-out), visibility .6s;
+}
+.loader.is-hidden{ opacity:0; visibility:hidden; pointer-events:none; }
+.loader-mark{
+  font-family: var(--font-mono);
+  font-size: var(--fs-small);
+  color: var(--text-muted);
+  letter-spacing: .1em;
+  display:flex; flex-direction:column; align-items:center; gap: var(--sp-3);
+}
+.loader-bar{ width: 180px; height: 2px; background: var(--border-soft); overflow:hidden; position:relative; }
+.loader-bar::after{
+  content:''; position:absolute; inset:0; width:40%; background: var(--signal-indigo);
+  animation: loaderSlide 1.1s var(--ease-in-out) infinite;
+}
+@keyframes loaderSlide{ 0%{ transform: translateX(-100%); } 100%{ transform: translateX(350%); } }
+
+/* Scroll progress bar */
+.scroll-progress{
+  position: fixed; top:0; left:0; height:2px; width:0%;
+  background: linear-gradient(90deg, var(--signal-indigo), var(--signal-teal));
+  z-index: 1001;
+}
+
+/* ---------- 4. Buttons ---------- */
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:.6rem;
+  padding: .9rem 1.7rem;
+  font-family: var(--font-body); font-weight: 600; font-size: var(--fs-small);
+  border-radius: var(--r-pill);
+  border: 1px solid transparent;
+  transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast), background var(--dur-fast), border-color var(--dur-fast);
+  white-space: nowrap;
+}
+.btn-primary{ background: var(--text-primary); color:#07080c; }
+.btn-primary:hover{ transform: translateY(-2px); box-shadow: var(--glow-teal); background:#fff; }
+.btn-ghost{ background: transparent; border-color: var(--border-soft); color: var(--text-primary); }
+.btn-ghost:hover{ border-color: var(--signal-indigo); transform: translateY(-2px); }
+.btn-accent{ background: linear-gradient(100deg, var(--signal-indigo), var(--signal-teal)); color:#04050a; }
+.btn-accent:hover{ transform: translateY(-2px); box-shadow: var(--glow-indigo); }
+.btn-block{ width:100%; }
+.btn-sm{ padding:.6rem 1.1rem; font-size: var(--fs-micro); }
+.btn[disabled]{ opacity:.5; pointer-events:none; }
+
+/* ---------- 5. Navbar ---------- */
+.nav{
+  position: fixed; top:0; left:0; right:0; z-index: 1000;
+  padding: var(--sp-3) 0;
+  transition: background var(--dur-med) var(--ease-out), padding var(--dur-med), border-color var(--dur-med);
+  border-bottom: 1px solid transparent;
+}
+.nav.is-scrolled{
+  background: rgba(11,13,18,0.82);
+  backdrop-filter: blur(16px);
+  padding: var(--sp-2) 0;
+  border-color: var(--border-hair);
+}
+.nav-inner{ display:flex; align-items:center; justify-content:space-between; gap: var(--sp-4); }
+.nav-logo{ display:flex; align-items:center; gap:.6rem; }
+.nav-logo-img{ height: 50px; width: 150px; }
+.nav-logo-text{ font-family: var(--font-mono); font-size: var(--fs-small); letter-spacing:.14em; color: var(--text-muted); }
+.nav-links{ display:flex; align-items:center; gap: var(--sp-5); }
+.nav-links a{
+  position: relative; font-size: var(--fs-small); font-weight:500; color: var(--text-secondary);
+  padding: .3rem 0; transition: color var(--dur-fast);
+}
+.nav-links a::after{
+  content:''; position:absolute; left:0; bottom:-2px; width:0; height:1px;
+  background: var(--signal-teal); transition: width var(--dur-fast) var(--ease-out);
+}
+.nav-links a:hover, .nav-links a.is-active{ color: var(--text-primary); }
+.nav-links a:hover::after, .nav-links a.is-active::after{ width:100%; }
+.nav-actions{ display:flex; align-items:center; gap: var(--sp-3); }
+.nav-toggle{ display:none; flex-direction:column; gap:5px; width:26px; z-index:1100; }
+.nav-toggle span{ height:2px; background: var(--text-primary); border-radius:2px; transition: transform var(--dur-fast), opacity var(--dur-fast); }
+.nav-toggle.is-open span:nth-child(1){ transform: translateY(7px) rotate(45deg); }
+.nav-toggle.is-open span:nth-child(2){ opacity:0; }
+.nav-toggle.is-open span:nth-child(3){ transform: translateY(-7px) rotate(-45deg); }
+
+/* ---------- 6. Footer ---------- */
+.footer{
+  background: var(--bg-void);
+  border-top: 1px solid var(--border-hair);
+  padding: var(--sp-6) 0 var(--sp-4);
+}
+.footer-top{
+  display:grid; grid-template-columns: 1.4fr repeat(3, 1fr); gap: var(--sp-5);
+  padding-bottom: var(--sp-5);
+}
+.footer-brand .nav-logo{ margin-bottom: var(--sp-3); }
+.footer-brand p{ max-width: 320px; font-size: var(--fs-small); }
+.footer-col h4{ font-family: var(--font-mono); font-size: var(--fs-micro); letter-spacing:.1em; text-transform:uppercase; color: var(--text-muted); margin-bottom: var(--sp-3); }
+.footer-col a{ display:block; font-size: var(--fs-small); color: var(--text-secondary); padding: .35rem 0; transition: color var(--dur-fast); }
+.footer-col a:hover{ color: var(--signal-teal); }
+.footer-bottom{
+  display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap: var(--sp-3);
+  padding-top: var(--sp-4); border-top: 1px solid var(--border-hair);
+  font-size: var(--fs-micro); color: var(--text-muted); font-family: var(--font-mono);
+}
+.footer-status{ display:flex; align-items:center; gap:.5rem; }
+.footer-status .dot{ width:7px; height:7px; border-radius:50%; background: var(--signal-teal); box-shadow:0 0 8px var(--signal-teal); }
+
+/* ---------- 7. Cards, badges, misc shared ---------- */
+.card{
+  background: var(--bg-surface);
+  border: 1px solid var(--border-hair);
+  border-radius: var(--r-lg);
+  padding: var(--sp-4);
+  transition: border-color var(--dur-fast), transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast);
+}
+.card:hover{ border-color: var(--border-soft); transform: translateY(-4px); box-shadow: var(--shadow-card); }
+
+.badge{
+  display:inline-flex; align-items:center; gap:.4rem;
+  font-family: var(--font-mono); font-size: var(--fs-micro);
+  padding: .3rem .7rem; border-radius: var(--r-pill);
+  background: rgba(91,127,255,0.12); color: var(--signal-indigo);
+  border: 1px solid rgba(91,127,255,0.25);
+}
+.badge-teal{ background: rgba(0,229,160,0.1); color: var(--signal-teal); border-color: rgba(0,229,160,0.25); }
+.badge-amber{ background: rgba(255,182,72,0.1); color: var(--signal-amber); border-color: rgba(255,182,72,0.25); }
+.badge-red{ background: rgba(255,84,112,0.1); color: var(--signal-red); border-color: rgba(255,84,112,0.25); }
+
+.divider{ height:1px; background: var(--border-hair); width:100%; }
+.pill-stat{
+  font-family: var(--font-mono); font-size: var(--fs-micro); color: var(--text-muted);
+  border: 1px solid var(--border-hair); border-radius: var(--r-pill); padding: .4rem .9rem;
+  display:inline-flex; align-items:center; gap:.5rem;
+}
+.grain{
+  position: fixed; inset:0; z-index: 2; pointer-events:none; opacity:.03; mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.cursor-glow{
+  position: fixed; width: 420px; height: 420px; border-radius:50%;
+  background: radial-gradient(circle, rgba(91,127,255,0.10), transparent 70%);
+  pointer-events:none; z-index:1; transform: translate(-50%,-50%);
+  transition: opacity .3s; will-change: transform;
+}
+.ok-dot{
+  display:inline-block; width:7px; height:7px; border-radius:50%;
+  background: var(--signal-teal); box-shadow: 0 0 8px var(--signal-teal);
+  animation: okPulse 2.2s ease-in-out infinite;
+}
+@keyframes okPulse{ 0%,100%{ opacity:1; } 50%{ opacity:.45; } }
+
+/* ---------- 8. Hero ---------- */
+.services-hero{
+  position: relative;
+  padding: 150px 0 var(--sp-6);
+  overflow: hidden;
+}
+.hero-bg{
+  position: absolute; inset:0; z-index:-1;
+}
+.hero-bg img{
+  width:100%; height:100%; object-fit: cover; object-position: center;
+  opacity: .35;
+}
+.hero-bg::after{
+  content:'';
+  position:absolute; inset:0;
+  background: linear-gradient(90deg, rgba(7,8,12,0.55) 0%, rgba(7,8,12,0.8) 55%, var(--bg-base) 100%);
+}
+.hero-grid{ display:grid; grid-template-columns: 1.15fr 1fr; gap: var(--sp-5); align-items: stretch; }
+.services-hero h1{ margin-top: var(--sp-3); }
+.services-lead{ margin-top: var(--sp-3); font-size: var(--fs-lead); max-width: 560px; }
+.hero-features{ display:flex; flex-direction:column; gap:.6rem; margin-top: var(--sp-4); }
+.hero-features li{
+  display:flex; align-items:center; gap:.7rem; font-size: var(--fs-small); color: var(--text-secondary);
+}
+.hero-features li strong{ color: var(--text-primary); font-weight:600; }
+.hero-actions{ display:flex; align-items:center; gap: var(--sp-3); margin-top: var(--sp-4); flex-wrap: wrap; }
+.hero-fineprint{ margin-top: var(--sp-3); font-size: var(--fs-micro); color: var(--text-muted); }
+.hero-meta{ display:flex; gap: var(--sp-2); flex-wrap:wrap; margin-top: var(--sp-4); }
+
+.hero-visual{
+  position: relative; border-radius: var(--r-lg); overflow:hidden;
+  border: 1px solid var(--border-hair); min-height: 460px;
+}
+.hero-visual img{ width:100%; height:100%; object-fit:cover; position:absolute; inset:0; }
+.hero-visual::after{
+  content:'';
+  position:absolute; inset:0;
+  background: linear-gradient(180deg, rgba(7,8,12,0.05) 45%, rgba(7,8,12,0.92) 100%);
+}
+.hero-visual-card{
+  position:absolute; left: var(--sp-3); right: var(--sp-3); bottom: var(--sp-3); z-index: 1;
+  background: rgba(11,13,18,0.72); border:1px solid var(--border-soft); backdrop-filter: blur(10px);
+  border-radius: var(--r-md); padding: var(--sp-3);
+}
+.hero-visual-card .stat-head{ display:flex; align-items:center; gap:.6rem; font-family: var(--font-display); font-weight:600; }
+.hero-visual-card p{ margin-top: .5rem; color: var(--text-muted); }
+
+/* ---------- 9. Proof strip ---------- */
+.proof-strip{ padding: var(--sp-4) 0 var(--sp-5); border-bottom: 1px solid var(--border-hair); }
+.proof-grid{
+  display:grid; grid-template-columns: repeat(4, 1fr); gap: var(--sp-4);
+}
+.proof-item{ text-align:left; }
+.proof-num{
+  font-family: var(--font-display); font-size: clamp(1.8rem, 3vw, 2.6rem); font-weight:600;
+  color: var(--text-primary); line-height:1;
+}
+.proof-label{ margin-top: .5rem; font-size: var(--fs-small); color: var(--text-muted); }
+
+/* ---------- 10. Tabs & catalog panels ---------- */
+.tabs{ display:flex; gap: var(--sp-2); margin-bottom: var(--sp-5); border-bottom:1px solid var(--border-hair); flex-wrap:wrap; overflow-x:auto; -webkit-overflow-scrolling: touch; }
+.tab{
+  padding: .9rem 1.4rem; font-size: var(--fs-small); font-weight:600; color: var(--text-muted);
+  border-bottom: 2px solid transparent; transition: color var(--dur-fast), border-color var(--dur-fast);
+  white-space: nowrap;
+}
+.tab:hover{ color: var(--text-secondary); }
+.tab.is-active{ color: var(--text-primary); border-color: var(--signal-teal); }
+
+.tab-panel{ display:none; }
+.tab-panel.is-active{ display:block; animation: panelIn .5s var(--ease-out); }
+@keyframes panelIn{ from{ opacity:0; transform: translateY(14px); } to{ opacity:1; transform:none; } }
+
+.panel-grid{ display:grid; grid-template-columns: 1fr 1fr; gap: var(--sp-5); align-items:center; }
+.panel-copy p{ margin-top: var(--sp-3); font-size: var(--fs-lead); max-width: 460px; }
+.panel-copy .btn{ margin-top: var(--sp-4); }
+.spec-list{ margin-top: var(--sp-4); display:flex; flex-direction:column; gap:.7rem; max-width: 420px; }
+.spec-list li{ display:flex; justify-content:space-between; padding-bottom:.7rem; border-bottom:1px solid var(--border-hair); font-size: var(--fs-small); }
+.spec-list li span{ color: var(--text-muted); }
+.spec-list li strong{ font-family: var(--font-mono); font-weight:500; }
+.panel-visual{ min-height: 280px; display:flex; align-items:center; justify-content:center; }
+
+.mini-console{ width:100%; border-radius: var(--r-md); overflow:hidden; border:1px solid var(--border-hair); background: var(--bg-void); }
+.mini-console-head{ display:flex; align-items:center; gap:.4rem; padding:.7rem 1rem; background: var(--bg-surface-2); }
+.mini-console-head span{ width:9px; height:9px; border-radius:50%; background: var(--border-soft); }
+.mini-console-head span:last-child{ width:auto; height:auto; background:none; margin-left:auto; font-family: var(--font-mono); font-size: var(--fs-micro); color: var(--text-muted); }
+.mini-console-body{ padding: var(--sp-4); font-size: var(--fs-small); line-height:1.9; color: var(--text-secondary); white-space:pre-wrap; }
+.mini-console-body .ok{ color: var(--signal-teal); }
+
+.storage-viz{ width:100%; padding: var(--sp-3); }
+.storage-bar{ height:14px; border-radius: var(--r-pill); background: var(--bg-surface-2); overflow:hidden; margin-bottom: var(--sp-4); }
+.storage-bar span{ display:block; height:100%; background: linear-gradient(90deg, var(--signal-indigo), var(--signal-teal)); border-radius: var(--r-pill); }
+.storage-legend{ display:flex; flex-direction:column; gap:.6rem; font-size: var(--fs-small); color: var(--text-secondary); }
+.storage-legend i{ width:9px; height:9px; border-radius:50%; display:inline-block; margin-right:.5rem; }
+
+.latency-list{ width:100%; padding: var(--sp-3); display:flex; flex-direction:column; gap: var(--sp-3); }
+.latency-row{ display:grid; grid-template-columns: 90px 1fr 44px; align-items:center; gap: var(--sp-2); font-size: var(--fs-small); }
+.latency-bar{ height:6px; background: var(--bg-surface-2); border-radius: var(--r-pill); overflow:hidden; }
+.latency-bar span{ display:block; height:100%; background: var(--signal-teal); border-radius: var(--r-pill); }
+
+.db-viz{ display:flex; align-items:center; gap: var(--sp-3); }
+.db-node{ padding: var(--sp-3) var(--sp-4); border-radius: var(--r-md); border:1px solid var(--border-soft); background: var(--bg-surface-2); font-family: var(--font-mono); font-size: var(--fs-micro); display:flex; align-items:center; gap:.5rem; }
+.db-primary{ border-color: var(--signal-teal); }
+.db-connector{ width:60px; height:1px; background: repeating-linear-gradient(90deg, var(--border-soft) 0 6px, transparent 6px 12px); }
+
+/* ---------- 11. Global infrastructure (photo section) ---------- */
+.infra-section{ background: var(--bg-void); }
+.infra-grid{ display:grid; grid-template-columns: 1.1fr 1fr; gap: var(--sp-5); align-items:center; }
+.infra-media{
+  position:relative; border-radius: var(--r-lg); overflow:hidden; border:1px solid var(--border-hair);
+  aspect-ratio: 4 / 3;
+}
+.infra-media img{ width:100%; height:100%; object-fit:cover; }
+.infra-media::after{
+  content:''; position:absolute; inset:0;
+  background: linear-gradient(180deg, transparent 40%, rgba(7,8,12,0.85) 100%);
+}
+.region-pins{ position:absolute; inset:0; padding: var(--sp-3); display:flex; flex-wrap:wrap; align-content:flex-end; gap:.5rem; }
+.region-pill{
+  font-family: var(--font-mono); font-size: var(--fs-micro); color: var(--text-primary);
+  background: rgba(7,8,12,0.6); border:1px solid var(--border-soft); backdrop-filter: blur(6px);
+  border-radius: var(--r-pill); padding: .35rem .8rem; display:flex; align-items:center; gap:.4rem;
+}
+.infra-copy .spec-list{ max-width: 480px; }
+
+/* ---------- 12. Reliability & security (photo section) ---------- */
+.reliability-grid{ display:grid; grid-template-columns: 1fr 1.1fr; gap: var(--sp-5); align-items:center; }
+.reliability-media{ border-radius: var(--r-lg); overflow:hidden; border:1px solid var(--border-hair); aspect-ratio: 4 / 3; order: 2; }
+.reliability-media img{ width:100%; height:100%; object-fit:cover; }
+.reliability-copy{ order:1; }
+.compliance-list{ margin-top: var(--sp-4); display:grid; grid-template-columns: 1fr 1fr; gap: var(--sp-3); max-width: 560px; }
+.compliance-item{ display:flex; gap:.7rem; align-items:flex-start; font-size: var(--fs-small); color: var(--text-secondary); }
+.compliance-item .badge{ flex-shrink:0; margin-top:.1rem; }
+
+/* ---------- 13. Getting started steps (photo section) ---------- */
+.steps-section{ background: var(--bg-void); }
+.steps-grid{ display:grid; grid-template-columns: 1fr 1fr; gap: var(--sp-5); align-items:center; }
+.steps-media{ border-radius: var(--r-lg); overflow:hidden; border:1px solid var(--border-hair); aspect-ratio: 4 / 3; }
+.steps-media img{ width:100%; height:100%; object-fit:cover; }
+.steps-list{ display:flex; flex-direction:column; }
+.step{ display:flex; gap: var(--sp-3); padding: var(--sp-3) 0; border-bottom: 1px solid var(--border-hair); }
+.step:first-child{ padding-top:0; }
+.step:last-child{ border-bottom:none; }
+.step-num{ font-family: var(--font-mono); font-size: var(--fs-small); color: var(--signal-teal); flex-shrink:0; width: 2.2rem; }
+.step-copy h3{ font-size: 1.15rem; }
+.step-copy p{ margin-top:.4rem; font-size: var(--fs-small); max-width: 420px; }
+
+/* ---------- 14. Pricing ---------- */
+.pricing-grid{ display:grid; grid-template-columns: repeat(3,1fr); gap: var(--sp-4); }
+.pricing-card{ display:flex; flex-direction:column; gap: var(--sp-2); position:relative; }
+.pricing-card--highlight{ border-color: var(--signal-teal); box-shadow: var(--glow-teal); }
+.pricing-card .badge{ position:absolute; top:-14px; right: var(--sp-4); }
+.price{ font-family: var(--font-display); font-size:2rem; margin: var(--sp-2) 0; }
+.price span{ font-weight:700; }
+.pricing-list{ display:flex; flex-direction:column; gap:.6rem; margin: var(--sp-3) 0 var(--sp-4); flex:1; }
+.pricing-list li{ font-size: var(--fs-small); color: var(--text-secondary); padding-left: 1.2rem; position:relative; }
+.pricing-list li::before{ content:'—'; position:absolute; left:0; color: var(--signal-teal); }
+
+/* ---------- 15. FAQ accordion ---------- */
+.accordion{ display:flex; flex-direction:column; }
+.accordion-item{ border-top:1px solid var(--border-hair); }
+.accordion-item:last-child{ border-bottom:1px solid var(--border-hair); }
+.accordion-trigger{
+  width:100%; display:flex; justify-content:space-between; align-items:center; gap: var(--sp-3);
+  padding: var(--sp-4) 0; text-align:left; font-family: var(--font-display); font-size:1.1rem; font-weight:500;
+}
+.accordion-icon{ font-family: var(--font-mono); color: var(--signal-teal); font-size:1.3rem; transition: transform var(--dur-fast); flex-shrink:0; }
+.accordion-item.is-open .accordion-icon{ transform: rotate(45deg); }
+.accordion-panel{ max-height:0; overflow:hidden; transition: max-height var(--dur-med) var(--ease-out); }
+.accordion-panel p{ padding-bottom: var(--sp-4); max-width: 640px; }
+.accordion-item.is-open .accordion-panel{ max-height: 220px; }
+
+/* ---------- 16. CTA band ---------- */
+.cta-band{
+  padding: var(--sp-6) 0;
+  background: linear-gradient(180deg, var(--bg-base), var(--bg-void));
+  border-top: 1px solid var(--border-hair);
+}
+.cta-inner{ text-align:center; max-width: 640px; margin: 0 auto; }
+.cta-inner p{ margin-top: var(--sp-2); font-size: var(--fs-lead); }
+.cta-inner .hero-actions{ justify-content:center; margin-top: var(--sp-4); }
+/*
+   17. MEDIA QUERIES — consolidated, mobile-first breakpoints
+   ============================================================ */
+
+@media (max-width: 640px){
+  .container{ padding: 0 var(--sp-3); }
+}
+
+@media (max-width: 1100px){
+  .infra-grid, .reliability-grid, .steps-grid{ grid-template-columns: 1fr; }
+  .reliability-media{ order:1; }
+  .reliability-copy{ order:2; }
+
+  .hero-grid{ grid-template-columns: 1fr; }
+  .hero-visual{ min-height: 340px; }
+}
+
+@media (max-width: 900px){
+  .nav-toggle{ display:flex; }
+  .nav-links{
+    position: fixed; inset:0 0 0 auto; width:min(78vw,360px); height:100vh;
+    background: var(--bg-surface); flex-direction:column; align-items:flex-start;
+    justify-content:center; gap: var(--sp-4); padding: var(--sp-6) var(--sp-5);
+    transform: translateX(100%); transition: transform var(--dur-med) var(--ease-in-out);
+    border-left: 1px solid var(--border-hair);
+  }
+  .nav-links.is-open{ transform: translateX(0); }
+  .nav-links a{ font-size: 1.4rem; }
+  .nav-actions .btn-ghost{ display:none; }
+
+  .cursor-glow{ display:none; }
+
+  .services-hero{ padding: 130px 0 var(--sp-5); }
+  .hero-visual{ min-height: 280px; }
+
+  .proof-grid{ grid-template-columns: repeat(2, 1fr); row-gap: var(--sp-4); }
+
+  .panel-grid{ grid-template-columns:1fr; }
+  .panel-visual{ min-height: 220px; order:-1; }
+
+  .footer-top{ grid-template-columns: 1fr 1fr; }
+  .footer-brand{ grid-column: 1/-1; }
+}
+
+@media (max-width: 700px){
+  .section{ padding: var(--sp-5) 0; }
+  .section-head{ margin-bottom: var(--sp-4); }
+
+  .pricing-grid{ grid-template-columns: 1fr; }
+  .compliance-list{ grid-template-columns: 1fr; }
+
+  .tabs{ gap: var(--sp-1); }
+  .tab{ padding: .8rem 1rem; }
+
+  .infra-media, .reliability-media, .steps-media{ aspect-ratio: 16 / 10; }
+}
+
+@media (max-width: 480px){
+  .proof-grid{ grid-template-columns: 1fr 1fr; }
+  .proof-num{ font-size: 1.6rem; }
+
+  .accordion-trigger{ font-size: 1rem; padding: var(--sp-3) 0; }
+  .accordion-item.is-open .accordion-panel{ max-height: 280px; }
+
+  .hero-actions, .cta-inner .hero-actions{ flex-direction:column; align-items:stretch; }
+  .hero-actions .btn, .cta-inner .btn{ width:100%; }
+
+  .step{ gap: var(--sp-2); }
+}
+
+</style>
+</head>
+<body>
+
+<div class="cursor-glow"></div>
+<div class="grain"></div>
+<div class="scroll-progress"></div>
+<!-- ============ PRELOADER ============ -->
+  <div class="loader" id="loader">
+    <div class="loader-inner">
+
+      <div class="loader-brand" id="loaderBrand" aria-hidden="true"></div>
+
+      <div class="loader-count"><span id="loaderPercent">0</span><small>%</small></div>
+      <div class="loader-status" id="loaderStatus">Establishing secure connection</div>
+
+      <div class="loader-track"><div class="loader-fill" id="loaderFill"></div></div>
+    </div>
+  </div>
+
+<header class="nav">
+  <div class="container nav-inner">
+    <a href="index.html" class="nav-logo">
+      <img src="./assets/stackly-removebg-preview.png" alt="STACKLY" class="nav-logo-img">
+      <!-- <span class="nav-logo-text">CLOUD</span> -->
+    </a>
+    <nav class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="about.html">About</a>
+      <a href="services.html">Services</a>
+      <a href="blog.html">Blog</a>
+      <a href="contact.html">Contact</a>
+    </nav>
+    <div class="nav-actions">
+      <!-- <a href="login.html" class="btn btn-ghost">Log in</a> -->
+      <a href="login.html" class="btn btn-primary">Login</a>
+    </div>
+    <button class="nav-toggle" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+  </div>
+</header>
+
+<main>
+
+  <!-- Hero -->
+  <section class="services-hero">
+    <div class="hero-bg" aria-hidden="true">
+      <img src="./assets/imresizer-server_rack.jpg"
+           alt="" loading="eager" decoding="async">
+    </div>
+    <div class="container hero-grid">
+      <div>
+        <div class="eyebrow" data-reveal>Platform</div>
+        <h1 data-reveal data-reveal-delay="40">Every primitive you need. Nothing you don't.</h1>
+        <p class="services-lead" data-reveal data-reveal-delay="80">Provision compute, storage, networking and data services independently, or compose them into a full stack. One API, one bill, one region map — priced by the second, not the seat.</p>
+
+        <ul class="hero-features" data-reveal data-reveal-delay="60">
+          <li><span class="ok-dot"></span> <strong>Deploy in 34 regions</strong> — the same service mesh everywhere, no per-region setup.</li>
+          <li><span class="ok-dot"></span> <strong>Autoscale in under a second</strong> — reacts to real traffic, not five-minute-old metrics.</li>
+          <li><span class="ok-dot"></span> <strong>Billed to the second</strong> — no idle-instance tax, no annual lock-in.</li>
+        </ul>
+
+        <div class="hero-actions" data-reveal data-reveal-delay="120">
+          <a href="login.html" class="btn btn-primary">Start building free</a>
+          <a href="contact.html" class="btn btn-ghost">Talk to an engineer</a>
+        </div>
+        <p class="hero-fineprint text-mono" data-reveal data-reveal-delay="140">No credit card required · Free tier forever · Cancel anytime</p>
+        <div class="hero-meta" data-reveal data-reveal-delay="160">
+          <span class="pill-stat"><span class="ok-dot"></span> All systems operational</span>
+          <span class="pill-stat">34 regions live</span>
+          <span class="pill-stat">99.99% uptime SLA</span>
+        </div>
+      </div>
+
+      <div class="hero-visual" data-reveal data-reveal-delay="120">
+        <img src="./assets/image-9 (2).jpg"
+             alt="Blue light travelling through fiber optic cables across the STACKLY Cloud network" loading="eager" decoding="async">
+        <div class="hero-visual-card">
+          <div class="stat-head"><span class="ok-dot"></span> Live network throughput</div>
+          <p class="text-mono">2.1 Tbps across 34 regions</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Proof strip -->
+  <section class="proof-strip">
+    <div class="container proof-grid">
+      <div class="proof-item" data-reveal>
+        <div class="proof-num"><span data-count-to="99.99" data-count-suffix="%">0%</span></div>
+        <div class="proof-label">Uptime SLA on Scale &amp; Enterprise</div>
+      </div>
+      <div class="proof-item" data-reveal data-reveal-delay="60">
+        <div class="proof-num"><span data-count-to="34">0</span></div>
+        <div class="proof-label">Regions across 6 continents</div>
+      </div>
+      <div class="proof-item" data-reveal data-reveal-delay="120">
+        <div class="proof-num"><span data-count-to="12" data-count-suffix="ms">0ms</span></div>
+        <div class="proof-label">Median edge latency</div>
+      </div>
+      <div class="proof-item" data-reveal data-reveal-delay="180">
+        <div class="proof-num"><span data-count-to="90" data-count-suffix="ms">0ms</span></div>
+        <div class="proof-label">Cold start, worst case</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tabbed service catalog -->
+  <section class="section catalog">
+    <div class="container">
+      <div class="section-head" data-reveal>
+        <div class="eyebrow">Catalog</div>
+        <h2>Four primitives, one control plane.</h2>
+        <p>Everything below shares the same API, the same billing model, and the same regions — switch tabs to see specs for each.</p>
+      </div>
+
+      <div class="tabs" data-reveal role="tablist">
+        <button class="tab is-active" data-tab="compute" role="tab" aria-selected="true">Compute</button>
+        <button class="tab" data-tab="storage" role="tab" aria-selected="false">Storage</button>
+        <button class="tab" data-tab="network" role="tab" aria-selected="false">Networking</button>
+        <button class="tab" data-tab="data" role="tab" aria-selected="false">Data</button>
+      </div>
+
+      <div class="tab-panel is-active" data-panel="compute">
+        <div class="panel-grid">
+          <div class="panel-copy">
+            <span class="badge">compute</span>
+            <h2>Elastic Compute</h2>
+            <p>Run containers, VMs or functions on the same fabric, with autoscaling that reacts in under a second to real traffic, not five-minute-old metrics.</p>
+            <ul class="spec-list">
+              <li><span>Cold start</span><strong>&lt; 90ms</strong></li>
+              <li><span>Max vCPUs / instance</span><strong>128</strong></li>
+              <li><span>Autoscale reaction</span><strong>&lt; 1s</strong></li>
+              <li><span>Billing granularity</span><strong>per second</strong></li>
+            </ul>
+            <a href="contact.html" class="btn btn-accent">Provision compute</a>
+          </div>
+          <div class="panel-visual card">
+            <div class="mini-console">
+              <div class="mini-console-head"><span></span><span></span><span></span><span>deploy.sh</span></div>
+              <pre class="mini-console-body text-mono">$ stackly deploy --region us-east-1
+                &gt; building container image...
+                &gt; provisioning 3 instances...
+                &gt; health check <span class="ok">passed</span>
+                &gt; live at edge.stackly.app</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="tab-panel" data-panel="storage">
+        <div class="panel-grid">
+          <div class="panel-copy">
+            <span class="badge badge-teal">storage</span>
+            <h2>Object &amp; Block Storage</h2>
+            <p>Durable, versioned storage with automatic geo-replication, lifecycle rules, and block volumes for anything that needs raw disk performance.</p>
+            <ul class="spec-list">
+              <li><span>Durability</span><strong>11 nines</strong></li>
+              <li><span>Replication</span><strong>3-region default</strong></li>
+              <li><span>Max object size</span><strong>5TB</strong></li>
+              <li><span>Block IOPS</span><strong>up to 64,000</strong></li>
+            </ul>
+            <a href="contact.html" class="btn btn-accent">Provision storage</a>
+          </div>
+          <div class="panel-visual card">
+            <div class="storage-viz">
+              <div class="storage-bar"><span style="width:78%"></span></div>
+              <div class="storage-legend">
+                <span><i style="background:var(--signal-indigo)"></i>Primary — us-east-1</span>
+                <span><i style="background:var(--signal-teal)"></i>Replica — eu-west-2</span>
+                <span><i style="background:var(--signal-amber)"></i>Replica — ap-south-1</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-panel" data-panel="network">
+        <div class="panel-grid">
+          <div class="panel-copy">
+            <span class="badge">network</span>
+            <h2>Global Edge Network</h2>
+            <p>Anycast routing across 34 regions with automatic failover and DDoS mitigation built into every endpoint by default.</p>
+            <ul class="spec-list">
+              <li><span>Regions</span><strong>34</strong></li>
+              <li><span>Median edge latency</span><strong>12ms</strong></li>
+              <li><span>Failover time</span><strong>&lt; 400ms</strong></li>
+              <li><span>DDoS mitigation</span><strong>included</strong></li>
+            </ul>
+            <a href="contact.html" class="btn btn-accent">Provision networking</a>
+          </div>
+          <div class="panel-visual card">
+            <div class="latency-list text-mono">
+              <div class="latency-row"><span>us-east-1</span><div class="latency-bar"><span style="width:22%"></span></div><span>9ms</span></div>
+              <div class="latency-row"><span>eu-west-2</span><div class="latency-bar"><span style="width:34%"></span></div><span>14ms</span></div>
+              <div class="latency-row"><span>ap-south-1</span><div class="latency-bar"><span style="width:41%"></span></div><span>17ms</span></div>
+              <div class="latency-row"><span>sa-east-1</span><div class="latency-bar"><span style="width:52%"></span></div><span>21ms</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-panel" data-panel="data">
+        <div class="panel-grid">
+          <div class="panel-copy">
+            <span class="badge badge-amber">data</span>
+            <h2>Managed Data Services</h2>
+            <p>Postgres, Redis and event streaming — fully managed, with automated failover, point-in-time backups, and read replicas on demand.</p>
+            <ul class="spec-list">
+              <li><span>Backup frequency</span><strong>continuous</strong></li>
+              <li><span>Failover time</span><strong>&lt; 30s</strong></li>
+              <li><span>Engines</span><strong>Postgres, Redis, Kafka</strong></li>
+              <li><span>Max connections</span><strong>10,000</strong></li>
+            </ul>
+            <a href="contact.html" class="btn btn-accent">Provision data services</a>
+          </div>
+          <div class="panel-visual card">
+            <div class="db-viz">
+              <div class="db-node db-primary">PRIMARY<span class="ok-dot"></span></div>
+              <div class="db-connector"></div>
+              <div class="db-node">REPLICA</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Global infrastructure -->
+  <section class="section infra-section">
+    <div class="container infra-grid">
+      <div class="infra-media" data-reveal>
+        <img src="./assets/image-9 (3).jpg"
+             alt="Earth at night from space, showing city lights connected across continents" loading="lazy" decoding="async">
+        <div class="region-pins">
+          <span class="region-pill"><span class="ok-dot"></span>us-east-1</span>
+          <span class="region-pill"><span class="ok-dot"></span>eu-west-2</span>
+          <span class="region-pill"><span class="ok-dot"></span>ap-south-1</span>
+          <span class="region-pill"><span class="ok-dot"></span>sa-east-1</span>
+          <span class="region-pill"><span class="ok-dot"></span>af-south-1</span>
+        </div>
+      </div>
+      <div class="infra-copy" data-reveal data-reveal-delay="80">
+        <div class="eyebrow">Infrastructure</div>
+        <h2>34 regions, one routing table.</h2>
+        <p style="margin-top: var(--sp-3); font-size: var(--fs-lead);">Every region runs the identical service mesh, so a deploy in Mumbai behaves exactly like a deploy in Virginia. Traffic finds the nearest healthy region automatically — no config, no DNS tricks.</p>
+        <ul class="spec-list">
+          <li><span>Points of presence</span><strong>34</strong></li>
+          <li><span>Cross-region replication</span><strong>automatic</strong></li>
+          <li><span>Data residency controls</span><strong>per-project</strong></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Reliability & security -->
+  <section class="section">
+    <div class="container reliability-grid">
+      <div class="reliability-copy" data-reveal>
+        <div class="eyebrow">Reliability &amp; security</div>
+        <h2>Built to stay up, and to prove it.</h2>
+        <p style="margin-top: var(--sp-3); font-size: var(--fs-lead); max-width:480px;">Every workload runs behind the same edge protections and audit trail, whether you're on the free tier or running regulated workloads at scale.</p>
+        <div class="compliance-list">
+          <div class="compliance-item"><span class="badge badge-teal">✓</span>SOC 2 Type II audited annually</div>
+          <div class="compliance-item"><span class="badge badge-teal">✓</span>ISO 27001 certified infrastructure</div>
+          <div class="compliance-item"><span class="badge badge-teal">✓</span>AES-256 encryption at rest &amp; in transit</div>
+          <div class="compliance-item"><span class="badge badge-teal">✓</span>Continuous vulnerability scanning</div>
+          <div class="compliance-item"><span class="badge badge-teal">✓</span>Private VPC peering &amp; network isolation</div>
+          <div class="compliance-item"><span class="badge badge-teal">✓</span>24/7 SOC monitoring &amp; incident response</div>
+        </div>
+      </div>
+      <div class="reliability-media" data-reveal data-reveal-delay="80">
+        <img src="./assets/imresizer-server_rack.jpg"
+             alt="Blue light travelling through fiber optic cables" loading="lazy" decoding="async">
+      </div>
+    </div>
+  </section>
+
+  <!-- Getting started steps -->
+  <section class="section steps-section">
+    <div class="container steps-grid">
+      <div class="steps-media" data-reveal>
+        <img src="./assets/image-9 (1).jpg"
+             alt="Code editor showing application source code on screen" loading="lazy" decoding="async">
+      </div>
+      <div data-reveal data-reveal-delay="80">
+        <div class="eyebrow">Getting started</div>
+        <h2>From signup to first deploy in three steps.</h2>
+        <div class="steps-list" style="margin-top: var(--sp-4);">
+          <div class="step">
+            <span class="step-num">01</span>
+            <div class="step-copy">
+              <h3>Create a project</h3>
+              <p>Spin up a workspace and pick your default region — every other region stays one click away.</p>
+            </div>
+          </div>
+          <div class="step">
+            <span class="step-num">02</span>
+            <div class="step-copy">
+              <h3>Connect your repo or CLI</h3>
+              <p>Link a Git repository for push-to-deploy, or use the STACKLY CLI, Terraform provider, or REST API directly.</p>
+            </div>
+          </div>
+          <div class="step">
+            <span class="step-num">03</span>
+            <div class="step-copy">
+              <h3>Deploy</h3>
+              <p>Your first build finishes in under a minute. Autoscaling, logs, and metrics are on by default — nothing else to configure.</p>
+            </div>
+          </div>
+        </div>
+        <a href="login.html" class="btn btn-accent" style="margin-top: var(--sp-4);">Create free account</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing -->
+  <section class="section pricing">
+    <div class="container">
+      <div class="section-head" data-reveal>
+        <div class="eyebrow">Pricing</div>
+        <h2>Pay for what runs. Nothing else.</h2>
+      </div>
+      <div class="pricing-grid">
+        <div class="card pricing-card" data-reveal>
+          <h3>Build</h3>
+          <p class="price"><span>$0</span>/mo</p>
+          <p>For prototypes and side projects.</p>
+          <ul class="pricing-list">
+            <li>1 region</li>
+            <li>Shared compute pool</li>
+            <li>10GB storage included</li>
+            <li>Community support</li>
+          </ul>
+          <a href="login.html" class="btn btn-ghost btn-block">Start free</a>
+        </div>
+        <div class="card pricing-card pricing-card--highlight" data-reveal data-reveal-delay="80">
+          <span class="badge badge-teal">Most deployed</span>
+          <h3>Scale</h3>
+          <p class="price"><span>$0.014</span>/vCPU-hr</p>
+          <p>For production workloads that need to breathe.</p>
+          <ul class="pricing-list">
+            <li>All 34 regions</li>
+            <li>Dedicated compute</li>
+            <li>Pay-per-second billing</li>
+            <li>99.99% uptime SLA</li>
+            <li>24/7 engineer support</li>
+          </ul>
+          <a href="contact.html" class="btn btn-accent btn-block">Talk to sales</a>
+        </div>
+        <div class="card pricing-card" data-reveal data-reveal-delay="160">
+          <h3>Enterprise</h3>
+          <p class="price"><span>Custom</span></p>
+          <p>For regulated industries and reserved capacity.</p>
+          <ul class="pricing-list">
+            <li>Dedicated hardware options</li>
+            <li>Custom SLAs &amp; contracts</li>
+            <li>SSO, audit logs, VPC peering</li>
+            <li>Named solutions architect</li>
+          </ul>
+          <a href="contact.html" class="btn btn-ghost btn-block">Contact sales</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ accordion -->
+  <section class="section faq">
+    <div class="container">
+      <div class="section-head" data-reveal>
+        <div class="eyebrow">FAQ</div>
+        <h2>Common questions from platform teams.</h2>
+      </div>
+      <div class="accordion" data-reveal>
+        <div class="accordion-item is-open">
+          <button class="accordion-trigger">
+            <span>How is compute billed?</span><span class="accordion-icon">+</span>
+          </button>
+          <div class="accordion-panel"><p>Per-second, rounded to the nearest second, with no minimum commitment on the Scale plan. You only pay for instances while they're running.</p></div>
+        </div>
+        <div class="accordion-item">
+          <button class="accordion-trigger">
+            <span>Can I migrate from another provider without downtime?</span><span class="accordion-icon">+</span>
+          </button>
+          <div class="accordion-panel"><p>Yes — our migration tooling supports live replication for Postgres and Redis, and staged DNS cutover for compute and edge traffic.</p></div>
+        </div>
+        <div class="accordion-item">
+          <button class="accordion-trigger">
+            <span>What happens if a region goes down?</span><span class="accordion-icon">+</span>
+          </button>
+          <div class="accordion-panel"><p>Traffic reroutes automatically to the next-nearest healthy region in under 400ms. Data services promote a replica and failover in under 30 seconds.</p></div>
+        </div>
+        <div class="accordion-item">
+          <button class="accordion-trigger">
+            <span>Do you support Terraform or other IaC tools?</span><span class="accordion-icon">+</span>
+          </button>
+          <div class="accordion-panel"><p>Yes — the official STACKLY Terraform provider, a Pulumi package, and a CLI cover all provisioning workflows, in addition to the REST API.</p></div>
+        </div>
+        <div class="accordion-item">
+          <button class="accordion-trigger">
+            <span>Is there a free tier, and what happens when I outgrow it?</span><span class="accordion-icon">+</span>
+          </button>
+          <div class="accordion-panel"><p>The Build plan is free indefinitely for one region and a shared compute pool. Upgrading to Scale is a plan change, not a migration — your project, data, and domains carry over.</p></div>
+        </div>
+        <div class="accordion-item">
+          <button class="accordion-trigger">
+            <span>Can I bring my own VPC or run on dedicated hardware?</span><span class="accordion-icon">+</span>
+          </button>
+          <div class="accordion-panel"><p>Enterprise plans support VPC peering into your existing network and optional dedicated hardware for workloads with strict isolation requirements.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-band">
+    <div class="container cta-inner" data-reveal>
+      <h2>Ready to see it on your workload?</h2>
+      <p>Spin up a free environment in minutes — no card required.</p>
+      <div class="hero-actions">
+        <a href="login.html" class="btn btn-primary">Create free account</a>
+        <a href="contact.html" class="btn btn-ghost">Talk to sales</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <a href="index.html" class="nav-logo">
+          <img src="./assets/stackly-removebg-preview.png" alt="STACKLY" class="nav-logo-img">
+          <!-- <span class="nav-logo-text">CLOUD</span> -->
+        </a>
+        <p>Enterprise cloud infrastructure — compute, storage, networking and data — built for teams that run production.</p>
+      
+        <!-- ============ SOCIAL MEDIA ICONS (inline CSS) ============ -->
+        <div style="display:flex; align-items:center; gap:12px; margin-top:22px;">
+
+          <!-- Facebook -->
+          <a href="error.html" aria-label="Facebook" target="_blank" rel="noopener noreferrer"
+             style="display:flex; align-items:center; justify-content:center; width:38px; height:38px; border-radius:50%; background:rgba(232,234,237,0.06); border:1px solid rgba(232,234,237,0.14); color:#a7aebc; transition:all 0.25s ease; flex:none;"
+             onmouseover="this.style.background='#5b7fff'; this.style.borderColor='#5b7fff'; this.style.color='#07080c'; this.style.transform='translateY(-3px)';"
+             onmouseout="this.style.background='rgba(232,234,237,0.06)'; this.style.borderColor='rgba(232,234,237,0.14)'; this.style.color='#a7aebc'; this.style.transform='translateY(0)';">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="pointer-events:none;">
+              <path d="M14 13.5H16.5L17.5 9.5H14V7.5C14 6.47 14 5.5 16 5.5H17.5V2.14C17.17 2.097 15.94 2 14.64 2C11.93 2 10 3.657 10 6.7V9.5H7V13.5H10V22H14V13.5Z" fill="currentColor"/>
+            </svg>
+          </a>
+
+          <!-- Instagram -->
+          <a href="error.html" aria-label="Instagram" target="_blank" rel="noopener noreferrer"
+             style="display:flex; align-items:center; justify-content:center; width:38px; height:38px; border-radius:50%; background:rgba(232,234,237,0.06); border:1px solid rgba(232,234,237,0.14); color:#a7aebc; transition:all 0.25s ease; flex:none;"
+             onmouseover="this.style.background='#5b7fff'; this.style.borderColor='#5b7fff'; this.style.color='#07080c'; this.style.transform='translateY(-3px)';"
+             onmouseout="this.style.background='rgba(232,234,237,0.06)'; this.style.borderColor='rgba(232,234,237,0.14)'; this.style.color='#a7aebc'; this.style.transform='translateY(0)';">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="pointer-events:none;">
+              <rect x="2" y="2" width="20" height="20" rx="5" stroke="currentColor" stroke-width="2"/>
+              <circle cx="12" cy="12" r="4.2" stroke="currentColor" stroke-width="2"/>
+              <circle cx="17.4" cy="6.6" r="1.2" fill="currentColor"/>
+            </svg>
+          </a>
+
+          <!-- LinkedIn -->
+          <a href="error.html" aria-label="LinkedIn" target="_blank" rel="noopener noreferrer"
+             style="display:flex; align-items:center; justify-content:center; width:38px; height:38px; border-radius:50%; background:rgba(232,234,237,0.06); border:1px solid rgba(232,234,237,0.14); color:#a7aebc; transition:all 0.25s ease; flex:none;"
+             onmouseover="this.style.background='#5b7fff'; this.style.borderColor='#5b7fff'; this.style.color='#07080c'; this.style.transform='translateY(-3px)';"
+             onmouseout="this.style.background='rgba(232,234,237,0.06)'; this.style.borderColor='rgba(232,234,237,0.14)'; this.style.color='#a7aebc'; this.style.transform='translateY(0)';">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="pointer-events:none;">
+              <rect x="2" y="2" width="20" height="20" rx="4" stroke="currentColor" stroke-width="2"/>
+              <line x1="7" y1="10" x2="7" y2="17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <circle cx="7" cy="6.8" r="1.3" fill="currentColor"/>
+              <path d="M11.5 17V10M11.5 13C11.5 11.3 12.5 10 14.2 10C15.8 10 16.5 11.1 16.5 13V17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
+
+          <!-- YouTube -->
+          <a href="error.html" aria-label="YouTube" target="_blank" rel="noopener noreferrer"
+             style="display:flex; align-items:center; justify-content:center; width:38px; height:38px; border-radius:50%; background:rgba(232,234,237,0.06); border:1px solid rgba(232,234,237,0.14); color:#a7aebc; transition:all 0.25s ease; flex:none;"
+             onmouseover="this.style.background='#5b7fff'; this.style.borderColor='#5b7fff'; this.style.color='#07080c'; this.style.transform='translateY(-3px)';"
+             onmouseout="this.style.background='rgba(232,234,237,0.06)'; this.style.borderColor='rgba(232,234,237,0.14)'; this.style.color='#a7aebc'; this.style.transform='translateY(0)';">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="pointer-events:none;">
+              <path d="M21.5 7.6C21.27 6.63 20.5 5.86 19.55 5.63C17.86 5.2 12 5.2 12 5.2C12 5.2 6.14 5.2 4.45 5.63C3.5 5.86 2.73 6.63 2.5 7.6C2.08 9.32 2.08 12 2.08 12C2.08 12 2.08 14.68 2.5 16.4C2.73 17.37 3.5 18.11 4.45 18.34C6.14 18.77 12 18.77 12 18.77C12 18.77 17.86 18.77 19.55 18.34C20.5 18.11 21.27 17.37 21.5 16.4C21.92 14.68 21.92 12 21.92 12C21.92 12 21.92 9.32 21.5 7.6Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+              <path d="M10 9.6L14.6 12L10 14.4V9.6Z" fill="currentColor"/>
+            </svg>
+          </a>
+
+        </div>
+        <!-- ============ /SOCIAL MEDIA ICONS ============ -->
+
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <a href="index.html">Home</a>
+        <a href="about.html">About</a>
+       <a href="services.html">Services</a>
+        <a href="blog.html">Blog</a>
+        <a href="contact.html">Contact</a>
+      </div>
+      <div class="footer-col">
+        <h4>Product</h4>
+        <a href="services.html">Compute</a>
+        <a href="services.html">Storage</a>
+        <a href="services.html">Networking</a>
+        <a href="services.html">Data services</a>
+      </div>
+      <div class="footer-col">
+        <h4>Resources</h4>
+        <a href="error.html">Engineering blog</a>
+        <a href="error.html">Support</a>
+        <a href="error.html">Status page</a>
+        <a href="error.html">Documentation</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; 2026 STACKLY Cloud. All rights reserved.</span>
+      <span class="footer-status"><span class="dot"></span> All systems operational</span>
+    </div>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script>
+
+  (function () {
+  "use strict";
+
+  const loaderFill = document.getElementById("loaderFill");
+  const percentEl  = document.getElementById("loaderPercent");
+  const statusEl   = document.getElementById("loaderStatus");
+  const loaderEl   = document.getElementById("loader");
+  const brandEl    = document.getElementById("loaderBrand");
+
+  const statusSteps = [
+    { at: 0,  text: "Establishing secure connection" },
+    { at: 25, text: "Provisioning compute nodes" },
+    { at: 50, text: "Syncing regional caches" },
+    { at: 75, text: "Verifying data integrity" },
+    { at: 95, text: "Finalizing session" }
+  ];
+
+  // build the "STACKLY" wordmark once, letter by letter, staggered
+  (function buildBrandText() {
+    const word = "STACKLY";
+    word.split("").forEach((ch, i) => {
+      const span = document.createElement("span");
+      span.textContent = ch;
+      span.style.animationDelay = (i * 0.06) + "s";
+      brandEl.appendChild(span);
+    });
+  })();
+
+  let runToken = 0; // guards against overlapping runs if the loader is ever re-triggered
+
+  function runLoader() {
+    const myToken = ++runToken;
+
+    loaderEl.classList.remove("is-hidden");
+    percentEl.textContent = "0";
+    loaderFill.style.width = "0%";
+    statusEl.textContent = statusSteps[0].text;
+
+    // reset + restart the brand letter animation
+    brandEl.querySelectorAll("span").forEach((span) => {
+      span.style.animation = "none";
+      void span.offsetWidth; // force reflow so the animation can replay
+      span.style.animation = "";
+    });
+
+    let progress = 0;
+    let lastStatus = statusSteps[0].text;
+
+    function tick() {
+      if (myToken !== runToken) return; // a newer run has superseded this one
+
+      // uneven increments read as more "real" than a linear fill
+      progress += Math.random() * 6 + 2;
+      if (progress > 100) progress = 100;
+
+      const pct = Math.round(progress);
+      percentEl.textContent = pct;
+      loaderFill.style.width = pct + "%";
+
+      const step = [...statusSteps].reverse().find((s) => progress >= s.at);
+      if (step && step.text !== lastStatus) {
+        statusEl.classList.add("is-fading");
+        setTimeout(() => {
+          if (myToken !== runToken) return;
+          statusEl.textContent = step.text;
+          statusEl.classList.remove("is-fading");
+        }, 180);
+        lastStatus = step.text;
+      }
+
+      if (progress < 100) {
+        setTimeout(tick, 160);
+      } else {
+        document.body.classList.add("site-ready");
+        setTimeout(() => {
+          if (myToken !== runToken) return;
+          loaderEl.classList.add("is-hidden");
+        }, 500);
+      }
+    }
+    tick();
+  }
+
+  window.addEventListener("load", runLoader);
+})();
+  (function () {
+  "use strict";
+
+  document.documentElement.classList.add("js");
+
+  /* ---------------- Scroll progress bar ---------------- */
+  const progress = document.querySelector(".scroll-progress");
+  function updateProgress() {
+    if (!progress) return;
+    const h = document.documentElement;
+    const scrolled = (h.scrollTop) / (h.scrollHeight - h.clientHeight) * 100;
+    progress.style.width = (isFinite(scrolled) ? scrolled : 0) + "%";
+  }
+  document.addEventListener("scroll", updateProgress, { passive: true });
+
+  /* ---------------- Navbar scroll state + mobile toggle ---------------- */
+  const nav = document.querySelector(".nav");
+  function updateNav() {
+    if (!nav) return;
+    nav.classList.toggle("is-scrolled", window.scrollY > 40);
+  }
+  document.addEventListener("scroll", updateNav, { passive: true });
+  updateNav();
+
+  const navToggle = document.querySelector(".nav-toggle");
+  const navLinks = document.querySelector(".nav-links");
+  if (navToggle && navLinks) {
+    navToggle.addEventListener("click", () => {
+      const isOpen = navLinks.classList.toggle("is-open");
+      navToggle.classList.toggle("is-open", isOpen);
+      document.body.style.overflow = isOpen ? "hidden" : "";
+    });
+    navLinks.querySelectorAll("a").forEach((a) =>
+      a.addEventListener("click", () => {
+        navLinks.classList.remove("is-open");
+        navToggle.classList.remove("is-open");
+        document.body.style.overflow = "";
+      })
+    );
+  }
+
+  /* ---------------- Active nav link ---------------- */
+  const currentPage = (location.pathname.split("/").pop() || "index.html");
+  document.querySelectorAll(".nav-links a[href]").forEach((a) => {
+    if (a.getAttribute("href") === currentPage) a.classList.add("is-active");
+  });
+
+  /* ---------------- Scroll reveal (IntersectionObserver) ---------------- */
+  const revealEls = document.querySelectorAll("[data-reveal]");
+  if ("IntersectionObserver" in window && revealEls.length) {
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const delay = entry.target.dataset.revealDelay || 0;
+            setTimeout(() => entry.target.classList.add("is-visible"), Number(delay));
+            io.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.14, rootMargin: "0px 0px -60px 0px" }
+    );
+    revealEls.forEach((el) => io.observe(el));
+  } else {
+    revealEls.forEach((el) => el.classList.add("is-visible"));
+  }
+
+  /* ---------------- Cursor glow (desktop only) ---------------- */
+  const glow = document.querySelector(".cursor-glow");
+  if (glow && window.matchMedia("(pointer:fine)").matches) {
+    window.addEventListener("mousemove", (e) => {
+      glow.style.transform = `translate(${e.clientX}px, ${e.clientY}px) translate(-50%,-50%)`;
+    });
+  }
+
+  /* ---------------- Animated counters (data-count-to) ---------------- */
+  function animateCount(el) {
+    const target = parseFloat(el.dataset.countTo);
+    const decimals = (el.dataset.countTo.split(".")[1] || "").length;
+    const suffix = el.dataset.countSuffix || "";
+    const dur = 1600;
+    const start = performance.now();
+    function tick(now) {
+      const p = Math.min((now - start) / dur, 1);
+      const eased = 1 - Math.pow(1 - p, 3);
+      el.textContent = (target * eased).toFixed(decimals) + suffix;
+      if (p < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }
+  const counters = document.querySelectorAll("[data-count-to]");
+  if ("IntersectionObserver" in window && counters.length) {
+    const cio = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            animateCount(entry.target);
+            cio.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.6 }
+    );
+    counters.forEach((el) => cio.observe(el));
+  }
+
+  /* ---------------- GSAP hero + scroll orchestration (if GSAP present) ---------------- */
+  window.STACKLY = window.STACKLY || {};
+  window.STACKLY.gsapReady = function (cb) {
+    if (window.gsap) {
+      if (window.ScrollTrigger) gsap.registerPlugin(ScrollTrigger);
+      cb(window.gsap);
+    }
+  };
+})();
+
+(function () {
+  "use strict";
+
+  /* ---- Tabs ---- */
+  const tabs = document.querySelectorAll(".tab");
+  const panels = document.querySelectorAll(".tab-panel");
+  tabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
+      tabs.forEach((t) => { t.classList.remove("is-active"); t.setAttribute("aria-selected", "false"); });
+      panels.forEach((p) => p.classList.remove("is-active"));
+      tab.classList.add("is-active");
+      tab.setAttribute("aria-selected", "true");
+      document.querySelector(`[data-panel="${tab.dataset.tab}"]`).classList.add("is-active");
+    });
+  });
+
+  /* ---- Accordion ---- */
+  document.querySelectorAll(".accordion-trigger").forEach((trigger) => {
+    trigger.addEventListener("click", () => {
+      const item = trigger.closest(".accordion-item");
+      const wasOpen = item.classList.contains("is-open");
+      item.parentElement.querySelectorAll(".accordion-item").forEach((i) => i.classList.remove("is-open"));
+      if (!wasOpen) item.classList.add("is-open");
+    });
+  });
+
+})();
+
+</script>
+</body>
+</html>
