@@ -413,6 +413,43 @@ p{ color: var(--text-secondary); }
 .checkbox-row{ display:flex; align-items:center; gap:.6rem; font-size: var(--fs-small); color: var(--text-secondary); }
 .checkbox-row input{ width:16px; height:16px; flex:none; accent-color: var(--signal-teal); }
 
+/* ---- Custom topic dropdown (replaces native <select> so the option list
+       stays contained inside the card instead of the browser's native
+       popup breaking out past it) ---- */
+.custom-select{ position:relative; }
+.custom-select-trigger{
+  width:100%; display:flex; align-items:center; justify-content:space-between; gap:.6rem;
+  padding: .9rem 1rem;
+  background: var(--bg-surface); border: 1px solid var(--border-soft);
+  border-radius: var(--r-md); color: var(--text-primary); font-size: var(--fs-body);
+  transition: border-color var(--dur-fast), box-shadow var(--dur-fast);
+}
+.custom-select-trigger .custom-select-value.is-placeholder{ color: var(--text-muted); }
+.custom-select-trigger svg{
+  width:16px; height:16px; color: var(--text-muted); flex:none;
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+.custom-select.is-open .custom-select-trigger{
+  border-color: var(--signal-indigo); box-shadow: 0 0 0 3px rgba(91,127,255,0.18);
+}
+.custom-select.is-open .custom-select-trigger svg{ transform: rotate(180deg); }
+.custom-select-list{
+  position:absolute; left:0; right:0; top: calc(100% + 8px); z-index: 20;
+  max-height: 260px; overflow-y: auto;
+  background: var(--bg-elevated); border: 1px solid var(--border-soft); border-radius: var(--r-md);
+  box-shadow: var(--shadow-card);
+  opacity:0; visibility:hidden; transform: translateY(-6px);
+  transition: opacity var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out), visibility var(--dur-fast);
+}
+.custom-select.is-open .custom-select-list{ opacity:1; visibility:visible; transform: translateY(0); }
+.custom-select-option{
+  width:100%; text-align:left; padding: .8rem 1rem; font-size: var(--fs-body);
+  color: var(--text-secondary); transition: background var(--dur-fast), color var(--dur-fast);
+}
+.custom-select-option:hover{ background: var(--bg-surface-2); color: var(--text-primary); }
+.custom-select-option.is-selected{ background: rgba(0,229,160,0.08); color: var(--signal-teal); }
+.custom-select-option[data-placeholder]{ color: var(--text-muted); }
+
 /* ==========================================================================
    7. CONTACT PAGE
    ========================================================================== */
@@ -649,15 +686,22 @@ p{ color: var(--text-secondary); }
           <input type="text" id="company" name="company" placeholder="Company name">
         </div>
         <div class="field">
-          <label for="topic">What can we help with?</label>
-          <select id="topic" name="topic" required>
-            <option value="">Select a topic</option>
-            <option>Sales &amp; pricing</option>
-            <option>Technical support</option>
-            <option>Migration from another provider</option>
-            <option>Partnerships</option>
-            <option>Something else</option>
-          </select>
+          <label id="topic-label">What can we help with?</label>
+          <div class="custom-select" id="topic-select">
+            <button type="button" class="custom-select-trigger" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="topic-label">
+              <span class="custom-select-value is-placeholder">Select a topic</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+            <div class="custom-select-list" role="listbox" tabindex="-1">
+              <button type="button" class="custom-select-option" role="option" data-placeholder data-value="">Select a topic</button>
+              <button type="button" class="custom-select-option" role="option" data-value="Sales & pricing">Sales &amp; pricing</button>
+              <button type="button" class="custom-select-option" role="option" data-value="Technical support">Technical support</button>
+              <button type="button" class="custom-select-option" role="option" data-value="Migration from another provider">Migration from another provider</button>
+              <button type="button" class="custom-select-option" role="option" data-value="Partnerships">Partnerships</button>
+              <button type="button" class="custom-select-option" role="option" data-value="Something else">Something else</button>
+            </div>
+          </div>
+          <input type="hidden" id="topic" name="topic" required value="">
           <span class="field-error">Please choose a topic.</span>
         </div>
         <div class="field">
@@ -1004,6 +1048,48 @@ p{ color: var(--text-secondary); }
   const modalClose = document.getElementById("modalClose");
   let autoCloseTimer = null;
 
+  /* ---- Custom topic dropdown ---- */
+  document.querySelectorAll(".custom-select").forEach((select) => {
+    const trigger = select.querySelector(".custom-select-trigger");
+    const valueEl = select.querySelector(".custom-select-value");
+    const list = select.querySelector(".custom-select-list");
+    const wrapper = select.closest(".field");
+    const hidden = wrapper.querySelector("input[type=hidden]");
+    const options = select.querySelectorAll(".custom-select-option");
+
+    function closeSelect() {
+      select.classList.remove("is-open");
+      trigger.setAttribute("aria-expanded", "false");
+    }
+    function openSelect() {
+      select.classList.add("is-open");
+      trigger.setAttribute("aria-expanded", "true");
+    }
+
+    trigger.addEventListener("click", () => {
+      select.classList.contains("is-open") ? closeSelect() : openSelect();
+    });
+
+    options.forEach((opt) => {
+      opt.addEventListener("click", () => {
+        options.forEach((o) => o.classList.remove("is-selected"));
+        opt.classList.add("is-selected");
+        valueEl.textContent = opt.textContent;
+        valueEl.classList.toggle("is-placeholder", opt.hasAttribute("data-placeholder"));
+        if (hidden) hidden.value = opt.dataset.value;
+        wrapper.classList.remove("has-error");
+        closeSelect();
+      });
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!select.contains(e.target)) closeSelect();
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeSelect();
+    });
+  });
+
   function validateField(field) {
     const wrapper = field.closest(".field");
     if (!wrapper) return true;
@@ -1044,6 +1130,11 @@ p{ color: var(--text-secondary); }
     form.querySelectorAll("input, textarea, select").forEach((field) => {
       if (!validateField(field)) allValid = false;
     });
+    const topicWrapper = document.getElementById("topic").closest(".field");
+    if (!document.getElementById("topic").value) {
+      topicWrapper.classList.add("has-error");
+      allValid = false;
+    }
     if (!allValid) {
       form.querySelector(".has-error input, .has-error textarea, .has-error select")?.focus();
       return;
@@ -1052,6 +1143,11 @@ p{ color: var(--text-secondary); }
     submitBtn.textContent = "Sending...";
     setTimeout(() => {
       form.reset();
+      document.getElementById("topic").value = "";
+      const topicValueEl = document.querySelector(".custom-select-value");
+      topicValueEl.textContent = "Select a topic";
+      topicValueEl.classList.add("is-placeholder");
+      document.querySelectorAll(".custom-select-option").forEach((o) => o.classList.remove("is-selected"));
       form.querySelectorAll(".field").forEach((f) => f.classList.remove("has-error"));
       submitBtn.textContent = "Send message";
       submitBtn.disabled = false;

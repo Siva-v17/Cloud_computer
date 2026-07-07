@@ -402,7 +402,8 @@ p{ color: var(--text-secondary); }
 .login-card{ width:100%; max-width: 420px; margin: auto 0; }
 .auth-tabs{ display:flex; background: var(--bg-surface); border-radius: var(--r-pill); padding:4px; margin-bottom: var(--sp-5); }
 .auth-tab{ flex:1; padding:.7rem; border-radius: var(--r-pill); font-size: var(--fs-small); font-weight:600; color: var(--text-muted); transition: all var(--dur-fast); }
-.auth-tab.is-active{ background: var(--text-primary); color:#07080c; }
+.auth-tab.is-active{background: linear-gradient(100deg, var(--signal-indigo), var(--signal-teal));
+    color: #04050a; } 
 
 .auth-form{ display:none; flex-direction:column; }
 .auth-form.is-active{ display:flex; animation: panelIn .4s var(--ease-out); }
@@ -509,6 +510,40 @@ body[data-auth-mode="signup"] .signup-hint{ display:inline; }
 .modal-card p{ margin-bottom: var(--sp-4); font-size: var(--fs-small); }
 .modal-close{ position:absolute; top: var(--sp-3); right: var(--sp-3); font-size:1.4rem; color: var(--text-muted); }
 
+/* ---- Custom account-type dropdown (replaces native <select> to avoid the
+       browser's native option list overflowing/breaking out of the card) ---- */
+.custom-select{ position:relative; }
+.custom-select-trigger{
+  width:100%; display:flex; align-items:center; justify-content:space-between; gap:.6rem;
+  padding: .9rem 1rem;
+  background: var(--bg-surface); border: 1px solid var(--border-soft);
+  border-radius: var(--r-md); color: var(--text-primary); font-size: var(--fs-body);
+  transition: border-color var(--dur-fast), box-shadow var(--dur-fast);
+}
+.custom-select-trigger svg{
+  width:16px; height:16px; color: var(--text-muted); flex:none;
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+.custom-select.is-open .custom-select-trigger{
+  border-color: var(--signal-indigo); box-shadow: 0 0 0 3px rgba(91,127,255,0.18);
+}
+.custom-select.is-open .custom-select-trigger svg{ transform: rotate(180deg); }
+.custom-select-list{
+  position:absolute; left:0; right:0; top: calc(100% + 8px); z-index: 20;
+  background: var(--bg-elevated); border: 1px solid var(--border-soft); border-radius: var(--r-md);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  opacity:0; visibility:hidden; transform: translateY(-6px);
+  transition: opacity var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out), visibility var(--dur-fast);
+}
+.custom-select.is-open .custom-select-list{ opacity:1; visibility:visible; transform: translateY(0); }
+.custom-select-option{
+  width:100%; text-align:left; padding: .8rem 1rem; font-size: var(--fs-body);
+  color: var(--text-secondary); transition: background var(--dur-fast), color var(--dur-fast);
+}
+.custom-select-option:hover{ background: var(--bg-surface-2); color: var(--text-primary); }
+.custom-select-option.is-selected{ background: rgba(0,229,160,0.08); color: var(--signal-teal); }
+
   </style>
 </head>
 <body class="login-body">
@@ -551,10 +586,8 @@ body[data-auth-mode="signup"] .signup-hint{ display:inline; }
 
     <div class="login-card">
       <div class="auth-tabs">
-        <button class="auth-tab is-active" data-auth="signin" style="background: linear-gradient(100deg, var(--signal-indigo), var(--signal-teal));
-    color: #04050a;">Sign In</button>
-        <button class="auth-tab" data-auth="signup" style="background: linear-gradient(100deg, var(--signal-indigo), var(--signal-teal));
-    color: #04050a;">Sign Up</button>
+        <button class="auth-tab is-active" data-auth="signin">Sign In</button>
+        <button class="auth-tab" data-auth="signup">Sign Up</button>
       </div>
 
       <!-- SIGN IN -->
@@ -655,11 +688,18 @@ body[data-auth-mode="signup"] .signup-hint{ display:inline; }
           <span class="field-error" id="confirmPasswordError">Passwords do not match.</span>
         </div>
         <div class="field">
-          <label for="su-role">Account type</label>
-          <select id="su-role" required>
-            <option value="user">User — deploy &amp; manage my workloads</option>
-            <option value="admin">Administrator — manage org &amp; billing</option>
-          </select>
+          <label id="su-role-label">Account type</label>
+          <div class="custom-select" id="su-role-select">
+            <button type="button" class="custom-select-trigger" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="su-role-label">
+              <span class="custom-select-value">User</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+            <div class="custom-select-list" role="listbox" tabindex="-1">
+              <button type="button" class="custom-select-option is-selected" role="option" aria-selected="true" data-value="user">User</button>
+              <button type="button" class="custom-select-option" role="option" aria-selected="false" data-value="admin">Administrator</button>
+            </div>
+          </div>
+          <input type="hidden" id="su-role" value="user">
         </div>
         <label class="checkbox-row"><input type="checkbox" required> I agree to the Terms of Service.</label>
         <button type="submit" class="btn btn-accent btn-block">Create account</button>
@@ -704,7 +744,7 @@ body[data-auth-mode="signup"] .signup-hint{ display:inline; }
     </div>
     <h3>Account created</h3>
     <p>Your STACKLY Cloud account is ready. Sign in below to open your console.</p>
-    <button type="button" class="btn btn-accent btn-block" id="signupSuccessContinue" onclick="window.location.href('error.html')">Continue to sign in</button>
+    <button type="button" class="btn btn-accent btn-block" id="signupSuccessContinue">Continue to sign in</button>
   </div>
 </div>
 
@@ -738,6 +778,46 @@ body[data-auth-mode="signup"] .signup-hint{ display:inline; }
         btn.classList.add("is-active");
         if (hidden) hidden.value = btn.dataset.role;
       });
+    });
+  });
+
+  /* ---- Custom dropdown (Account type) ---- */
+  document.querySelectorAll(".custom-select").forEach((select) => {
+    const trigger = select.querySelector(".custom-select-trigger");
+    const valueEl = select.querySelector(".custom-select-value");
+    const list = select.querySelector(".custom-select-list");
+    const hidden = select.parentElement.querySelector("input[type=hidden]");
+    const options = select.querySelectorAll(".custom-select-option");
+
+    function closeSelect() {
+      select.classList.remove("is-open");
+      trigger.setAttribute("aria-expanded", "false");
+    }
+    function openSelect() {
+      select.classList.add("is-open");
+      trigger.setAttribute("aria-expanded", "true");
+    }
+
+    trigger.addEventListener("click", () => {
+      select.classList.contains("is-open") ? closeSelect() : openSelect();
+    });
+
+    options.forEach((opt) => {
+      opt.addEventListener("click", () => {
+        options.forEach((o) => { o.classList.remove("is-selected"); o.setAttribute("aria-selected", "false"); });
+        opt.classList.add("is-selected");
+        opt.setAttribute("aria-selected", "true");
+        valueEl.textContent = opt.textContent;
+        if (hidden) hidden.value = opt.dataset.value;
+        closeSelect();
+      });
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!select.contains(e.target)) closeSelect();
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeSelect();
     });
   });
 
